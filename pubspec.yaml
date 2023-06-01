@@ -1,0 +1,24 @@
+name: avatar_maker_anime
+description: A new Flutter project.
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: '>=3.0.2 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/0_clothes/
+    - assets/1_multiple_color_hats/
+    - assets/2_hats/
+    - assets/3_base/
