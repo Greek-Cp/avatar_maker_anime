@@ -9,6 +9,30 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_screenutil: ^5.7.0
+  provider: ^6.0.5
+  google_fonts: ^4.0.3
+  http: ^0.13.5
+  flutter_custom_tab_bar: ^1.2.1
+  contained_tab_bar_view: ^0.8.0
+  bottom_bar_matu: ^1.3.0
+  dropdown_button2: ^2.0.0
+  image_picker: ^0.8.7+1
+  rotated_corner_decoration: ^2.1.0+1
+  curved_navigation_bar: ^1.0.3
+  flutter_staggered_animations: ^1.1.1
+  wave_transition: ^0.0.6
+  intl: ^0.17.0
+  audioplayers: ^4.0.1
+  carousel_slider: ^4.2.1
+  swipe_cards: ^2.0.0+1
+  get: ^4.6.5
+  cherry_toast: ^1.2.1
+  image_cropper: ^4.0.1
+  path_provider: ^2.0.15
+  encrypted_asset_image: ^0.0.1+2
+  
+
 
 dev_dependencies:
   flutter_test:
@@ -18,7 +42,34 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/0_clothes/
-    - assets/1_multiple_color_hats/
-    - assets/2_hats/
-    - assets/3_base/
+    - assets/
+    - assets/ui_icon/
+    - assets/part0_class0/
+    - assets/part10__class10/
+    - assets/part11_class11/
+    - assets/part12_class12/
+    - assets/part13_class13/
+    - assets/part14_class14/
+    - assets/part15_01class15/
+    - assets/part16_02class16/
+    - assets/part17_class17/
+    - assets/part18_class18/
+    - assets/part19_class19/
+    - assets/part1_02class1/
+    - assets/part20_class20/
+    - assets/part21_class21/
+    - assets/part22__class22/
+    - assets/part23_class23/
+    - assets/part24_class24/
+    - assets/part25_01class25/
+    - assets/part26_02class26/
+    - assets/part27_class27/
+    - assets/part28_class28/
+    - assets/part2_01class2/
+    - assets/part3_class3/
+    - assets/part4_class4/
+    - assets/part5_01class5/
+    - assets/part6_02class6/
+    - assets/part7_class7/
+    - assets/part8_class8/
+    - assets/part9_class9/
