@@ -1,12 +1,18 @@
 import 'dart:math';
 
 import 'package:avatar_maker_anime/component/ComponentButton.dart';
+import 'package:avatar_maker_anime/component/ComponentText.dart';
 import 'package:avatar_maker_anime/util/ColorApp.dart';
 import 'package:bottom_bar_matu/utils/app_utils.dart';
 import 'package:cherry_toast/resources/arrays.dart';
 import 'package:flutter/material.dart';
+import 'dart:ui' as ui;
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:image_gallery_saver/image_gallery_saver.dart';
 import '../../component/ComponentItem.dart';
 import '../../assets_class/Part28_class28.dart';
 import '../../assets_class/Part27_class27.dart';
@@ -41,6 +47,7 @@ import 'package:encrypted_asset_image/encrypted_asset_image.dart';
 
 class PageMakerCharacter extends StatefulWidget {
   static String? routeName = "/PageMakerCharacter";
+
   @override
   State<PageMakerCharacter> createState() => _PageMakerCharacterState();
 }
@@ -93,21 +100,12 @@ class _PageMakerCharacterState extends State<PageMakerCharacter> {
   int itemSelected = 0;
   List<Widget> listImageLayer = [];
 
-  late final FileCryptor fileCryptor;
-
   @override
   void initState() {
-    fileCryptor = FileCryptor(
-      key:
-          'VihW5CNfR9Fmhgz6b5AbUDQPsAzRWCA8', // This is your key with a length equal to 32
-      iv: 16, // iv is Initialization vector encryption times
-      dir: '', // Not required for this widget
-    );
     listImageLayer = List.generate(
       listItemMaker.length,
-      (index) => EncryptedAssetImage(
-        assetPath: listItemMaker[index].assetParent.toString(),
-        fileCryptor: fileCryptor,
+      (index) => Image.asset(
+        listItemMaker[index].assetParent.toString(),
         fit: BoxFit.fitWidth,
       ),
     );
@@ -137,13 +135,11 @@ class _PageMakerCharacterState extends State<PageMakerCharacter> {
         ),
         child: Stack(
           children: [
-            EncryptedAssetImage(
-              assetPath: Part21_class21.asset_0,
-              fileCryptor: fileCryptor,
+            Image.asset(
+              Part21_class21.asset_0,
             ),
-            EncryptedAssetImage(
-              fileCryptor: fileCryptor,
-              assetPath: itemMaker.listItem![0].toString(),
+            Image.asset(
+              itemMaker.listItem![0].toString(),
             ),
           ],
         ),
@@ -155,6 +151,52 @@ class _PageMakerCharacterState extends State<PageMakerCharacter> {
     int max = len - 1;
     int randomNumber = Random().nextInt(max) + 1;
     return randomNumber;
+  }
+
+  void showImageLayerDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Image Layers'),
+          content: Container(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: listImageLayer.length,
+              itemBuilder: (BuildContext context, int index) {
+                return Row(
+                  children: [
+                    ComponentTextPrimaryTittleBold(
+                      teks: index.toString(),
+                    ),
+                    Expanded(
+                      child: Container(
+                          width: 100,
+                          height: 100,
+                          child: listImageLayer[index]),
+                    ),
+                    GradientButtonWithCustomIconAndFunction(
+                        "assets/ui_icon/ic_erase.png",
+                        () => {
+                              setState(() {
+                                listImageLayer[index] =
+                                    Image.asset("assets/assets0sv1.png");
+                                Navigator.of(context).pop();
+                              }),
+                            }),
+                  ],
+                );
+              },
+            ),
+          ),
+          actions: <Widget>[
+            GradientCustomWidgetText(
+                "Kembali ✨", () => {Navigator.of(context).pop()})
+          ],
+        );
+      },
+    );
   }
 
   Widget ComponentItemPart(
@@ -179,17 +221,15 @@ class _PageMakerCharacterState extends State<PageMakerCharacter> {
       ),
       child: Stack(
         children: [
-          EncryptedAssetImage(
-            assetPath: Part21_class21.asset_0,
+          Image.asset(
+            Part21_class21.asset_0,
             width: width,
             height: heigth,
-            fileCryptor: fileCryptor,
           ),
-          EncryptedAssetImage(
-            assetPath: assetName.toString(),
+          Image.asset(
+            assetName.toString(),
             width: width,
             height: heigth,
-            fileCryptor: fileCryptor,
           ),
         ],
       ),
@@ -198,6 +238,33 @@ class _PageMakerCharacterState extends State<PageMakerCharacter> {
 
   bool isSelectedPart = false;
   bool isSelectedItem = false;
+  GlobalKey globalKey = GlobalKey();
+
+  Future<Uint8List> captureWidget() async {
+    try {
+      RenderRepaintBoundary boundary =
+          globalKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+      ui.Image image = await boundary.toImage(pixelRatio: 2.0);
+      ByteData? byteData =
+          await image.toByteData(format: ui.ImageByteFormat.png);
+      return byteData!.buffer.asUint8List();
+    } catch (e) {
+      print(e);
+      return Uint8List(0);
+    }
+  }
+
+  Future<void> saveWidgetAsImage() async {
+    Uint8List imageBytes = await captureWidget();
+
+    // Save the image to device storage
+    final result = await ImageGallerySaver.saveImage(imageBytes);
+    if (result['isSuccess']) {
+      print('Image saved successfully!');
+    } else {
+      print('Failed to save image.');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -213,66 +280,46 @@ class _PageMakerCharacterState extends State<PageMakerCharacter> {
               Stack(
                 children: [
                   Center(
-                    child: Stack(
-                      children: List.generate(listImageLayer.length,
-                          (index) => listImageLayer[index]),
+                    child: RepaintBoundary(
+                      key: globalKey,
+                      child: Stack(
+                        children: List.generate(listImageLayer.length,
+                            (index) => listImageLayer[index]),
+                      ),
                     ),
                   ),
-                  GradientButtonWithCustomIconAndFunctioon(
-                      "assets/ui_icon/ic_back.png",
-                      () => {
-                            setState(() {
-                              listImageLayer.forEachIndexed((element, index) {
-                                int tnd = Random().nextInt(
-                                    listItemMaker[index].listItem!.length);
-                                listImageLayer[index] = EncryptedAssetImage(
-                                    fileCryptor: fileCryptor,
-                                    assetPath:
-                                        listItemMaker[index].listItem![tnd]);
-                              });
-                            })
-                          }),
+                  GradientButtonWithCustomIconAndFunction(
+                      "assets/ui_icon/ic_back.png", () => {setState(() {})}),
                   Positioned(
                     right: 1,
                     bottom: 1,
-                    child: GradientButtonWithCustomIconAndFunctioon(
+                    child: GradientButtonWithCustomIconAndFunction(
                         "assets/ui_icon/ic_camera.png",
-                        () => {
-                              setState(() {
-                                listImageLayer.forEachIndexed((element, index) {
-                                  int tnd = Random().nextInt(
-                                      listItemMaker[index].listItem!.length);
-                                  listImageLayer[index] = EncryptedAssetImage(
-                                      fileCryptor: fileCryptor,
-                                      assetPath:
-                                          listItemMaker[index].listItem![tnd]);
-                                });
-                              })
-                            }),
+                        () => {saveWidgetAsImage()}),
                   ),
                   Positioned(
                     bottom: 1,
                     child: Column(
                       children: [
-                        GradientButtonWithCustomIconAndFunctioon(
+                        GradientButtonWithCustomIconAndFunction(
+                            "assets/ui_icon/ic_layer.png",
+                            () => {
+                                  setState(() {
+                                    showImageLayerDialog(context);
+                                  })
+                                }),
+                        GradientButtonWithCustomIconAndFunction(
                             "assets/ui_icon/ic_erase.png",
                             () => {
                                   setState(() {
                                     listImageLayer
                                         .forEachIndexed((element, index) {
-                                      int tnd = Random().nextInt(
-                                          listItemMaker[index]
-                                              .listItem!
-                                              .length);
                                       listImageLayer[index] =
-                                          EncryptedAssetImage(
-                                              fileCryptor: fileCryptor,
-                                              assetPath: listItemMaker[index]
-                                                  .listItem![tnd]);
+                                          Image.asset("assets/assets0sv1.png");
                                     });
                                   })
                                 }),
-                        GradientButtonWithCustomIconAndFunctioon(
+                        GradientButtonWithCustomIconAndFunction(
                             "assets/ui_icon/ic_random.png",
                             () => {
                                   setState(() {
@@ -282,11 +329,8 @@ class _PageMakerCharacterState extends State<PageMakerCharacter> {
                                           listItemMaker[index]
                                               .listItem!
                                               .length);
-                                      listImageLayer[index] =
-                                          EncryptedAssetImage(
-                                              fileCryptor: fileCryptor,
-                                              assetPath: listItemMaker[index]
-                                                  .listItem![tnd]);
+                                      listImageLayer[index] = Image.asset(
+                                          listItemMaker[index].listItem![tnd]);
                                     });
                                   })
                                 }),
@@ -295,7 +339,8 @@ class _PageMakerCharacterState extends State<PageMakerCharacter> {
                   ),
                   Align(
                       alignment: Alignment.center,
-                      child: GradientCustomWidget("", () => {}))
+                      child:
+                          GradientCustomWidgetText("Anime Maker ✨", () => {}))
                 ],
               ),
               Container(),
@@ -326,10 +371,8 @@ class _PageMakerCharacterState extends State<PageMakerCharacter> {
                     return GestureDetector(
                       onTap: () {
                         setState(() {
-                          listImageLayer[partSelected] = EncryptedAssetImage(
-                              fileCryptor: fileCryptor,
-                              assetPath:
-                                  listItemMaker[partSelected].listItem![index]);
+                          listImageLayer[partSelected] = Image.asset(
+                              listItemMaker[partSelected].listItem![index]);
                           itemSelected = index;
                         });
                       },

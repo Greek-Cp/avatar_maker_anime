@@ -181,11 +181,20 @@ class ComponentButtonSecondary extends StatelessWidget {
   }
 }
 
-class GradientButtonWithCustomIconAndFunctioon extends StatelessWidget {
-  String? assetImage;
-  Function? func;
+class GradientButtonWithCustomIconAndFunction extends StatefulWidget {
+  final String? assetImage;
+  final Function? func;
 
-  GradientButtonWithCustomIconAndFunctioon(this.assetImage, this.func);
+  GradientButtonWithCustomIconAndFunction(this.assetImage, this.func);
+
+  @override
+  _GradientButtonWithCustomIconAndFunctionState createState() =>
+      _GradientButtonWithCustomIconAndFunctionState();
+}
+
+class _GradientButtonWithCustomIconAndFunctionState
+    extends State<GradientButtonWithCustomIconAndFunction> {
+  double buttonSize = 56.0;
 
   @override
   Widget build(BuildContext context) {
@@ -195,26 +204,42 @@ class GradientButtonWithCustomIconAndFunctioon extends StatelessWidget {
       child: Material(
         elevation: 8.0,
         shape: CircleBorder(),
-        child: Container(
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: LinearGradient(
-              colors: [
-                Color.fromRGBO(255, 56, 182, 1),
-                Color.fromRGBO(255, 26, 136, 1),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+        child: GestureDetector(
+          onTapDown: (_) {
+            setState(() {
+              buttonSize = 76.0;
+            });
+          },
+          onTapUp: (_) {
+            setState(() {
+              buttonSize = 56.0;
+            });
+            widget.func?.call();
+          },
+          onTapCancel: () {
+            setState(() {
+              buttonSize = 56.0;
+            });
+          },
+          child: AnimatedContainer(
+            duration: Duration(milliseconds: 200),
+            width: buttonSize.w,
+            height: buttonSize.h,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [
+                  Color.fromRGBO(255, 56, 182, 1),
+                  Color.fromRGBO(255, 26, 136, 1),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
             ),
-          ),
-          child: GestureDetector(
-            onTap: () {
-              func!();
-            },
             child: Padding(
               padding: EdgeInsets.all(10.0),
               child: Image.asset(
-                assetImage.toString(),
+                widget.assetImage.toString(),
                 width: 28.0.w,
                 height: 28.0.h,
               ),
@@ -226,38 +251,43 @@ class GradientButtonWithCustomIconAndFunctioon extends StatelessWidget {
   }
 }
 
-class GradientCustomWidget extends StatelessWidget {
+class GradientCustomWidgetText extends StatelessWidget {
   String? assetImage;
   Function? func;
 
-  GradientCustomWidget(this.assetImage, this.func);
+  GradientCustomWidgetText(this.assetImage, this.func);
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.all(10.0),
-      child: Material(
-        elevation: 10,
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.r)),
-        child: Container(
-          decoration: BoxDecoration(
-            shape: BoxShape.rectangle,
-            borderRadius: BorderRadius.circular(10.r),
-            gradient: LinearGradient(
-              colors: [
-                Color.fromRGBO(255, 56, 182, 1),
-                Color.fromRGBO(255, 26, 136, 1),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+    return GestureDetector(
+      onTap: () {
+        func!();
+      },
+      child: Padding(
+        padding: EdgeInsets.all(10.0),
+        child: Material(
+          elevation: 10,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.r)),
+          child: Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.rectangle,
+              borderRadius: BorderRadius.circular(10.r),
+              gradient: LinearGradient(
+                colors: [
+                  Color.fromRGBO(255, 56, 182, 1),
+                  Color.fromRGBO(255, 26, 136, 1),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
             ),
-          ),
-          child: Padding(
-            padding: EdgeInsets.all(10.0),
-            child: ComponentTextPrimaryDescriptionBold(
-              teks: "Anime Maker ✨",
-              colorText: Colors.white,
+            child: Padding(
+              padding: EdgeInsets.all(10.0),
+              child: ComponentTextPrimaryDescriptionBold(
+                teks: "$assetImage",
+                colorText: Colors.white,
+              ),
             ),
           ),
         ),
