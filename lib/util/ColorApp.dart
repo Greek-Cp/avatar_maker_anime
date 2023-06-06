@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 class ColorApp {
-  static const PrimaryColor = Color.fromARGB(255, 233, 64, 87);
+  static const PrimaryColor = Color.fromARGB(255, 255, 48, 170);
   static const SecondaryColor = Color.fromARGB(255, 230, 230, 230);
   static const SecondaryButtonColor = Color.fromARGB(255, 253, 236, 238);
   static const SecondaryButtonColorApp = Color.fromARGB(255, 253, 236, 238);

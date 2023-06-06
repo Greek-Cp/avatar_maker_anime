@@ -5,37 +5,9 @@ import 'dart:io';
 
 import 'package:encrypted_asset_image/encrypted_asset_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:path_provider/path_provider.dart';
 import '../../component/ComponentItem.dart';
-import '../../assets_class/Part28_class28.dart';
-import '../../assets_class/Part27_class27.dart';
-import '../../assets_class/Part26_02class26.dart';
-import '../../assets_class/Part25_01class25.dart';
-import '../../assets_class/Part24_class24.dart';
-import '../../assets_class/Part23_class23.dart';
-import '../../assets_class/Part22__class22.dart';
-import '../../assets_class/Part21_class21.dart';
-import '../../assets_class/Part20_class20.dart';
-import '../../assets_class/Part19_class19.dart';
-import '../../assets_class/Part18_class18.dart';
-import '../../assets_class/Part17_class17.dart';
-import '../../assets_class/Part16_02class16.dart';
-import '../../assets_class/Part15_01class15.dart';
-import '../../assets_class/Part14_class14.dart';
-import '../../assets_class/Part13_class13.dart';
-import '../../assets_class/Part12_class12.dart';
-import '../../assets_class/Part11_class11.dart';
-import '../../assets_class/Part10__class10.dart';
-import '../../assets_class/Part9_class9.dart';
-import '../../assets_class/Part8_class8.dart';
-import '../../assets_class/Part7_class7.dart';
-import '../../assets_class/Part6_02class6.dart';
-import '../../assets_class/Part5_01class5.dart';
-import '../../assets_class/Part4_class4.dart';
-import '../../assets_class/Part3_class3.dart';
-import '../../assets_class/Part2_01class2.dart';
-import '../../assets_class/Part1_02class1.dart';
-import '../../assets_class/Part0_class0.dart';
 
 class Playground extends StatefulWidget {
   static String? routeName = "/PagePlayground";
@@ -71,16 +43,6 @@ class _PlaygroundState extends State<Playground> {
 
     super.initState();
   }
-
-  List<ItemMaker> listItemMaker = [
-    ItemMaker(Part28_class28.asset_0, Part28_class28.listAssetpart28_class28),
-    ItemMaker(Part27_class27.asset_0, Part27_class27.listAssetpart27_class27),
-    ItemMaker(
-        Part26_02class26.asset02_0, Part26_02class26.listAssetpart26_02class26),
-    ItemMaker(
-        Part25_01class25.asset01_0, Part25_01class25.listAssetpart25_01class25),
-    ItemMaker(Part24_class24.asset_0, Part24_class24.listAssetpart24_class24),
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -128,9 +90,19 @@ class _PlaygroundState extends State<Playground> {
             SizedBox(
               height: 1000,
               child: Expanded(
-                child: GridView.count(
-                  crossAxisCount: 5, // Number of columns
-                  children: listChildItem,
+                child: AnimationLimiter(
+                  child: GridView.count(
+                    crossAxisCount: 5, // Number of columns
+                    children: List.generate(
+                        listChildItem.length,
+                        (index) => AnimationConfiguration.staggeredGrid(
+                            columnCount: 3,
+                            position: index,
+                            duration: Duration(seconds: 1000),
+                            child: ScaleAnimation(
+                                child: FadeInAnimation(
+                                    child: listChildItem[index])))),
+                  ),
                 ),
               ),
             ),

@@ -35,6 +35,10 @@ dependencies:
   asset_cache: ^2.0.0
   widgets_to_image: ^0.0.2
   image_gallery_saver: ^2.0.1
+  fluid_bottom_nav_bar: ^1.4.0
+  marquee: ^2.2.3
+  drop_shadow_image: ^0.9.1
+  shared_preferences: ^2.0.20
 
 
 
@@ -48,32 +52,24 @@ flutter:
   assets:
     - assets/
     - assets/ui_icon/
+    - assets/ui_icon/page_intro.png
     - assets/part0_class0/
-    - assets/part10__class10/
+    - assets/part10_class10/
     - assets/part11_class11/
     - assets/part12_class12/
     - assets/part13_class13/
     - assets/part14_class14/
-    - assets/part15_01class15/
-    - assets/part16_02class16/
+    - assets/part15_class15/
+    - assets/part16_class16/
     - assets/part17_class17/
-    - assets/part18_class18/
+    - assets/part18_2class18/
     - assets/part19_class19/
-    - assets/part1_02class1/
-    - assets/part20_class20/
-    - assets/part21_class21/
-    - assets/part22__class22/
-    - assets/part23_class23/
-    - assets/part24_class24/
-    - assets/part25_01class25/
-    - assets/part26_02class26/
-    - assets/part27_class27/
-    - assets/part28_class28/
-    - assets/part2_01class2/
+    - assets/part1_class1/
+    - assets/part2_class2/
     - assets/part3_class3/
     - assets/part4_class4/
-    - assets/part5_01class5/
-    - assets/part6_02class6/
+    - assets/part5_class5/
+    - assets/part6_class6/
     - assets/part7_class7/
     - assets/part8_class8/
     - assets/part9_class9/

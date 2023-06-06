@@ -264,7 +264,7 @@ class GradientCustomWidgetText extends StatelessWidget {
         func!();
       },
       child: Padding(
-        padding: EdgeInsets.all(10.0),
+        padding: EdgeInsets.all(10.0.h),
         child: Material(
           elevation: 10,
           shape:
@@ -283,10 +283,11 @@ class GradientCustomWidgetText extends StatelessWidget {
               ),
             ),
             child: Padding(
-              padding: EdgeInsets.all(10.0),
+              padding: EdgeInsets.all(10.0.h),
               child: ComponentTextPrimaryDescriptionBold(
                 teks: "$assetImage",
                 colorText: Colors.white,
+                size: 15.sp,
               ),
             ),
           ),
