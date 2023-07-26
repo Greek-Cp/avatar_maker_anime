@@ -27,6 +27,7 @@ class _PageIntroGameState extends State<PageIntroGame> {
         duration: Duration(seconds: 5),
       );
     });
+
   }
   final repoController = Get.put(AssetRepo());
   @override

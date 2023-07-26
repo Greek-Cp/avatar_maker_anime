@@ -87,7 +87,6 @@ class _PageMakerCharacterState extends State<PageMakerCharacter> {
   @override
   void initState() {
     listItemMaker = RepositoryAsset.listItemMaker;
-
     listImageLayer = List.generate(listItemMaker!.length, (index) {
       int tnd = Random().nextInt(listItemMaker![index].listItem!.length);
       randNumber.add(tnd);
