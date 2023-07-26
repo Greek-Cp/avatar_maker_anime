@@ -4,7 +4,7 @@ publish_to: 'none'
 version: 0.1.0
 
 environment:
-  sdk: '>=3.0.2 <4.0.0'
+  sdk: '>=2.19.6 <4.0.0'
 
 dependencies:
   flutter:
@@ -39,6 +39,7 @@ dependencies:
   marquee: ^2.2.3
   drop_shadow_image: ^0.9.1
   shared_preferences: ^2.0.20
+  permission_handler: ^10.4.2
 
 
 

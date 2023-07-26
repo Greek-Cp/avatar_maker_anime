@@ -1,8 +1,8 @@
-import 'package:get/get.dart';
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class SaveAvatarController extends GetxController {
-  RxList<List<String>> listAvatar = <List<String>>[].obs;
+class SaveAvatarController with ChangeNotifier {
+  List<List<String>> listAvatar = [];
   SharedPreferences? _prefs;
 
   Future<void> loadDataFromSharedPreferences() async {
@@ -12,7 +12,7 @@ class SaveAvatarController extends GetxController {
       print("load pref berhasil");
 
       if (avatarData != null) {
-        listAvatar.value = avatarData.map((item) => item.split(',')).toList();
+        listAvatar = avatarData.map((item) => item.split(',')).toList();
       }
     } catch (error) {
       print("Error in loadDataFromSharedPreferences: $error");
