@@ -16,15 +16,14 @@ class SaveAvatarController with ChangeNotifier {
       }
     } catch (error) {
       print("Error in loadDataFromSharedPreferences: $error");
-      // Handle or report the error accordingly
     }
   }
 
   Future<void> saveAvatar(List<String> avatar) async {
     try {
-      avatar.forEach((element) {
-        print("str : " + element);
-      });
+      for (var element in avatar) {
+        print("str : $element");
+      }
       listAvatar.add(avatar);
 
       print("size ${listAvatar.length}");
@@ -32,7 +31,6 @@ class SaveAvatarController with ChangeNotifier {
       await _prefs!.setStringList('avatar_data', avatarData);
     } catch (error) {
       print("Error in saveAvatar: $error");
-      // Handle or report the error accordingly
     }
   }
 
@@ -44,7 +42,6 @@ class SaveAvatarController with ChangeNotifier {
       await _prefs!.setStringList('avatar_data', avatarData);
     } catch (error) {
       print("Error in deleteAvatar: $error");
-      // Handle or report the error accordingly
     }
   }
 }

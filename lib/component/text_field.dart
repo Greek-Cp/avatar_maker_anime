@@ -1,17 +1,25 @@
-import '../util/ColorApp.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../util/color_app.dart';
+
 class TextFieldPassword extends StatefulWidget {
-  TextEditingController? text_kontrol;
+  TextEditingController? textEditingController;
   String? hintText;
   bool? passwordType = false;
   String? labelName;
-  String? pesanValidasi;
-  TextFieldPassword(this.text_kontrol, this.hintText, this.passwordType,
-      this.labelName, this.pesanValidasi);
+  String? validationMessage;
+
+  TextFieldPassword(
+    this.textEditingController,
+    this.hintText,
+    this.passwordType,
+    this.labelName,
+    this.validationMessage, {
+    super.key,
+  });
 
   @override
   State<TextFieldPassword> createState() => _TextFieldPasswordState();
@@ -20,28 +28,26 @@ class TextFieldPassword extends StatefulWidget {
 class _TextFieldPasswordState extends State<TextFieldPassword> {
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(
-          height: 10.h,
-        ),
+        SizedBox(height: 10.h),
         Text(
           "${widget.labelName}",
           style: GoogleFonts.dmSans(
-              textStyle:
-                  TextStyle(fontWeight: FontWeight.normal, fontSize: 13.sp)),
+            textStyle: TextStyle(
+              fontWeight: FontWeight.normal,
+              fontSize: 13.sp,
+            ),
+          ),
           textAlign: TextAlign.start,
         ),
-        SizedBox(
-          height: 5.h,
-        ),
+        SizedBox(height: 5.h),
         TextFormField(
           validator: (value) {
-            if (value!.isEmpty || value == null) {
-              return "${widget.pesanValidasi} Tidak Boleh Kosong";
+            if (value!.isEmpty) {
+              return "${widget.validationMessage} Tidak Boleh Kosong";
             }
             if (value.length < 7) {
               return 'Password minimal terdiri dari 7 karakter';
@@ -53,36 +59,40 @@ class _TextFieldPasswordState extends State<TextFieldPassword> {
             return null;
           },
           obscureText: !widget.passwordType!,
-          controller: widget.text_kontrol,
+          controller: widget.textEditingController,
           textInputAction: TextInputAction.done,
           style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.normal),
           decoration: InputDecoration(
-              suffixIcon: IconButton(
-                  onPressed: () {
-                    setState(() {
-                      widget.passwordType = !widget.passwordType!;
-                    });
-                  },
-                  icon: Icon(
-                    widget.passwordType!
-                        ? Icons.visibility
-                        : Icons.visibility_off,
-                    color: ColorApp.PrimaryColor,
-                  )),
-              hintText: widget.hintText,
-              contentPadding: EdgeInsets.all(15),
-              enabledBorder: OutlineInputBorder(
-                  borderSide:
-                      BorderSide(width: 1, color: ColorApp.PrimaryColor),
-                  borderRadius: BorderRadius.all(Radius.circular(10))),
-              focusedBorder: OutlineInputBorder(
-                  borderSide:
-                      BorderSide(width: 2, color: ColorApp.PrimaryColor),
-                  borderRadius: BorderRadius.all(Radius.circular(10))),
-              border: OutlineInputBorder(
-                  borderSide:
-                      BorderSide(width: 1, color: ColorApp.PrimaryColor),
-                  borderRadius: BorderRadius.all(Radius.circular(10)))),
+            suffixIcon: IconButton(
+              onPressed: () {
+                setState(() => widget.passwordType = !widget.passwordType!);
+              },
+              icon: Icon(
+                widget.passwordType! ? Icons.visibility : Icons.visibility_off,
+                color: ColorApp.primaryColor,
+              ),
+            ),
+            hintText: widget.hintText,
+            contentPadding: EdgeInsets.all(15),
+            enabledBorder: OutlineInputBorder(
+              borderSide: BorderSide(width: 1, color: ColorApp.primaryColor),
+              borderRadius: BorderRadius.all(
+                Radius.circular(10),
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide(width: 2, color: ColorApp.primaryColor),
+              borderRadius: BorderRadius.all(
+                Radius.circular(10),
+              ),
+            ),
+            border: OutlineInputBorder(
+              borderSide: BorderSide(width: 1, color: ColorApp.primaryColor),
+              borderRadius: BorderRadius.all(
+                Radius.circular(10),
+              ),
+            ),
+          ),
         ),
       ],
     );
@@ -90,206 +100,227 @@ class _TextFieldPasswordState extends State<TextFieldPassword> {
 }
 
 class TextFieldImport {
-  static Padding TextForm(
-      {TextEditingController? text_kontrol,
-      String? hintText,
-      bool? readyOnlyTydack = false,
-      String? labelName,
-      String? pesanValidasi}) {
+  static Padding textForm({
+    TextEditingController? textEditingController,
+    String? hintText,
+    bool? readOnly = false,
+    String? labelName,
+    String? validationMessage,
+  }) {
     return Padding(
       padding: const EdgeInsets.all(2.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            height: 10.h,
-          ),
+          SizedBox(height: 10.h),
           Text(
-            "${labelName}",
+            "$labelName",
             style: GoogleFonts.dmSans(
-                textStyle:
-                    TextStyle(fontWeight: FontWeight.normal, fontSize: 13.sp)),
+              textStyle: TextStyle(
+                fontWeight: FontWeight.normal,
+                fontSize: 13.sp,
+              ),
+            ),
             textAlign: TextAlign.start,
           ),
-          SizedBox(
-            height: 5.h,
-          ),
+          SizedBox(height: 5.h),
           TextFormField(
             validator: (value) {
-              if (value!.isEmpty || value == null) {
-                return "${pesanValidasi} Tidak Boleh Kosong";
+              if (value!.isEmpty) {
+                return "$validationMessage Tidak Boleh Kosong";
               }
+              return null;
             },
-            readOnly: readyOnlyTydack!,
-            controller: text_kontrol,
+            readOnly: readOnly!,
+            controller: textEditingController,
             style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.normal),
             decoration: InputDecoration(
-                hintText: hintText,
-                contentPadding: EdgeInsets.all(15),
-                enabledBorder: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(width: 1, color: ColorApp.PrimaryColor),
-                    borderRadius: BorderRadius.all(Radius.circular(10))),
-                focusedBorder: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(width: 2, color: ColorApp.PrimaryColor),
-                    borderRadius: BorderRadius.all(Radius.circular(10))),
-                border: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(width: 1, color: ColorApp.PrimaryColor),
-                    borderRadius: BorderRadius.all(Radius.circular(10)))),
+              hintText: hintText,
+              contentPadding: EdgeInsets.all(15),
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(width: 1, color: ColorApp.primaryColor),
+                borderRadius: BorderRadius.all(
+                  Radius.circular(10),
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(width: 2, color: ColorApp.primaryColor),
+                borderRadius: BorderRadius.all(
+                  Radius.circular(10),
+                ),
+              ),
+              border: OutlineInputBorder(
+                borderSide: BorderSide(width: 1, color: ColorApp.primaryColor),
+                borderRadius: BorderRadius.all(
+                  Radius.circular(10),
+                ),
+              ),
+            ),
           ),
         ],
       ),
     );
   }
 
-  static Padding TextFormMultiLine(
-      {TextEditingController? text_kontrol,
+  static Padding textFormMultiLine(
+      {TextEditingController? textEditingController,
       String? hintText,
-      bool? readyOnlyTydack = false,
+      bool? readOnly = false,
       String? labelName,
-      String? pesanValidasi}) {
+      String? validationMessage}) {
     return Padding(
       padding: const EdgeInsets.all(2.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            height: 10.h,
-          ),
+          SizedBox(height: 10.h),
           Text(
-            "${labelName}",
+            "$labelName",
             style: GoogleFonts.dmSans(
-                textStyle:
-                    TextStyle(fontWeight: FontWeight.normal, fontSize: 13.sp)),
+              textStyle: TextStyle(
+                fontWeight: FontWeight.normal,
+                fontSize: 13.sp,
+              ),
+            ),
             textAlign: TextAlign.start,
           ),
-          SizedBox(
-            height: 5.h,
-          ),
+          SizedBox(height: 5.h),
           TextFormField(
             validator: (value) {
-              if (value!.isEmpty || value == null) {
-                return "${pesanValidasi} Tidak Boleh Kosong";
+              if (value!.isEmpty) {
+                return "$validationMessage Tidak Boleh Kosong";
               }
+              return null;
             },
-            readOnly: readyOnlyTydack!,
+            readOnly: readOnly!,
             minLines: 3,
             maxLines: 8,
             keyboardType: TextInputType.multiline,
-            controller: text_kontrol,
+            controller: textEditingController,
             style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.normal),
             decoration: InputDecoration(
-                hintText: hintText,
-                contentPadding: EdgeInsets.all(15),
-                enabledBorder: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(width: 1, color: ColorApp.PrimaryColor),
-                    borderRadius: BorderRadius.all(Radius.circular(10))),
-                focusedBorder: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(width: 2, color: ColorApp.PrimaryColor),
-                    borderRadius: BorderRadius.all(Radius.circular(10))),
-                border: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(width: 1, color: ColorApp.PrimaryColor),
-                    borderRadius: BorderRadius.all(Radius.circular(10)))),
+              hintText: hintText,
+              contentPadding: EdgeInsets.all(15),
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(width: 1, color: ColorApp.primaryColor),
+                borderRadius: BorderRadius.all(
+                  Radius.circular(10),
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(width: 2, color: ColorApp.primaryColor),
+                borderRadius: BorderRadius.all(
+                  Radius.circular(10),
+                ),
+              ),
+              border: OutlineInputBorder(
+                borderSide: BorderSide(width: 1, color: ColorApp.primaryColor),
+                borderRadius: BorderRadius.all(
+                  Radius.circular(10),
+                ),
+              ),
+            ),
           ),
         ],
       ),
     );
   }
 
-  static Padding TextFormNama(
-      {TextEditingController? text_kontrol,
+  static Padding textFormName(
+      {TextEditingController? textEditingController,
       String? hintText,
-      bool? readyOnlyTydack = false,
+      bool? readOnly = false,
       String? labelName,
-      String? pesanValidasi}) {
+      String? validationMessage}) {
     return Padding(
       padding: const EdgeInsets.all(2.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            height: 10.h,
-          ),
+          SizedBox(height: 10.h),
           Text(
-            "${labelName}",
+            "$labelName",
             style: GoogleFonts.dmSans(
-                textStyle:
-                    TextStyle(fontWeight: FontWeight.normal, fontSize: 13.sp)),
+              textStyle: TextStyle(
+                fontWeight: FontWeight.normal,
+                fontSize: 13.sp,
+              ),
+            ),
             textAlign: TextAlign.start,
           ),
-          SizedBox(
-            height: 5.h,
-          ),
+          SizedBox(height: 5.h),
           TextFormField(
             validator: (value) {
-              if (value!.isEmpty || value == null) {
-                return "${pesanValidasi} Tidak Boleh Kosong";
+              if (value!.isEmpty) {
+                return "$validationMessage Tidak Boleh Kosong";
               }
+              return null;
             },
             inputFormatters: [
               FilteringTextInputFormatter.allow(RegExp('[a-zA-Z\\s]'))
             ],
-            readOnly: readyOnlyTydack!,
-            controller: text_kontrol,
+            readOnly: readOnly!,
+            controller: textEditingController,
             style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.normal),
             decoration: InputDecoration(
-                hintText: hintText,
-                contentPadding: EdgeInsets.all(15),
-                enabledBorder: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(width: 1, color: ColorApp.PrimaryColor),
-                    borderRadius: BorderRadius.all(Radius.circular(10))),
-                focusedBorder: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(width: 2, color: ColorApp.PrimaryColor),
-                    borderRadius: BorderRadius.all(Radius.circular(10))),
-                border: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(width: 1, color: ColorApp.PrimaryColor),
-                    borderRadius: BorderRadius.all(Radius.circular(10)))),
+              hintText: hintText,
+              contentPadding: EdgeInsets.all(15),
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(width: 1, color: ColorApp.primaryColor),
+                borderRadius: BorderRadius.all(
+                  Radius.circular(10),
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(width: 2, color: ColorApp.primaryColor),
+                borderRadius: BorderRadius.all(
+                  Radius.circular(10),
+                ),
+              ),
+              border: OutlineInputBorder(
+                borderSide: BorderSide(width: 1, color: ColorApp.primaryColor),
+                borderRadius: BorderRadius.all(
+                  Radius.circular(10),
+                ),
+              ),
+            ),
           ),
         ],
       ),
     );
   }
 
-  static Padding TextFormEmail(
-      {TextEditingController? text_kontrol,
+  static Padding textFormEmail(
+      {TextEditingController? textEditingController,
       String? hintText,
-      bool? readyOnlyTydack = false,
+      bool? readOnly = false,
       String? labelName,
-      String? pesanValidasi}) {
+      String? validationMessage}) {
     return Padding(
       padding: const EdgeInsets.all(2.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            height: 10.h,
-          ),
+          SizedBox(height: 10.h),
           Text(
-            "${labelName}",
+            "$labelName",
             style: GoogleFonts.dmSans(
-                textStyle:
-                    TextStyle(fontWeight: FontWeight.normal, fontSize: 13.sp)),
+              textStyle: TextStyle(
+                fontWeight: FontWeight.normal,
+                fontSize: 13.sp,
+              ),
+            ),
             textAlign: TextAlign.start,
           ),
-          SizedBox(
-            height: 5.h,
-          ),
+          SizedBox(height: 5.h),
           TextFormField(
             validator: (value) {
-              if (value!.isEmpty || value == null) {
-                return "${pesanValidasi} Tidak Boleh Kosong";
+              if (value!.isEmpty) {
+                return "$validationMessage Tidak Boleh Kosong";
               }
               final regex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
               if (!regex.hasMatch(value)) {
@@ -297,63 +328,71 @@ class TextFieldImport {
               }
               return null;
             },
-            readOnly: readyOnlyTydack!,
-            controller: text_kontrol,
+            readOnly: readOnly!,
+            controller: textEditingController,
             keyboardType: TextInputType.emailAddress,
             style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.normal),
             decoration: InputDecoration(
-                hintText: hintText,
-                contentPadding: EdgeInsets.all(15),
-                enabledBorder: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(width: 1, color: ColorApp.PrimaryColor),
-                    borderRadius: BorderRadius.all(Radius.circular(10))),
-                focusedBorder: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(width: 2, color: ColorApp.PrimaryColor),
-                    borderRadius: BorderRadius.all(Radius.circular(10))),
-                border: OutlineInputBorder(
-                    borderSide:
-                        BorderSide(width: 1, color: ColorApp.PrimaryColor),
-                    borderRadius: BorderRadius.all(Radius.circular(10)))),
+              hintText: hintText,
+              contentPadding: EdgeInsets.all(15),
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(width: 1, color: ColorApp.primaryColor),
+                borderRadius: BorderRadius.all(
+                  Radius.circular(10),
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(width: 2, color: ColorApp.primaryColor),
+                borderRadius: BorderRadius.all(
+                  Radius.circular(10),
+                ),
+              ),
+              border: OutlineInputBorder(
+                borderSide: BorderSide(width: 1, color: ColorApp.primaryColor),
+                borderRadius: BorderRadius.all(
+                  Radius.circular(10),
+                ),
+              ),
+            ),
           ),
         ],
       ),
     );
   }
 
-  static Column TextFormTelp(
-      {TextEditingController? text_kontrol,
-      String? hintText,
-      int? length,
-      bool? readyOnlyTydack = false,
-      String? labelName,
-      String? pesanValidasi}) {
+  static Column textFormPhone({
+    TextEditingController? textEditingController,
+    String? hintText,
+    int? length,
+    bool? readOnly = false,
+    String? labelName,
+    String? validationMessage,
+  }) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(
-          height: 10.h,
-        ),
+        SizedBox(height: 10.h),
         Text(
-          "${labelName}",
+          "$labelName",
           style: GoogleFonts.dmSans(
-              textStyle:
-                  TextStyle(fontWeight: FontWeight.normal, fontSize: 13.sp)),
+            textStyle: TextStyle(
+              fontWeight: FontWeight.normal,
+              fontSize: 13.sp,
+            ),
+          ),
           textAlign: TextAlign.start,
         ),
-        SizedBox(
-          height: 5.h,
-        ),
+        SizedBox(height: 5.h),
         TextFormField(
           validator: (value) {
-            if (value!.isEmpty || value == null) {
-              return "${pesanValidasi} Tidak Boleh Kosong";
+            if (value!.isEmpty) {
+              return "$validationMessage Tidak Boleh Kosong";
             }
+            return null;
           },
-          controller: text_kontrol,
-          readOnly: readyOnlyTydack!,
+          controller: textEditingController,
+          readOnly: readOnly!,
           inputFormatters: [
             FilteringTextInputFormatter.digitsOnly,
             LengthLimitingTextInputFormatter(length)
@@ -361,23 +400,27 @@ class TextFieldImport {
           style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.normal),
           keyboardType: TextInputType.number,
           decoration: InputDecoration(
-              hintText: hintText,
-              contentPadding: EdgeInsets.all(15),
-              // ignore: prefer_const_constructors
-              enabledBorder: OutlineInputBorder(
-                  borderSide:
-                      BorderSide(width: 1, color: ColorApp.PrimaryColor),
-                  borderRadius: BorderRadius.all(Radius.circular(10))),
-              // ignore: prefer_const_constructors
-              focusedBorder: OutlineInputBorder(
-                  borderSide:
-                      BorderSide(width: 2, color: ColorApp.PrimaryColor),
-                  borderRadius: BorderRadius.all(Radius.circular(10))),
-              // ignore: prefer_const_constructors
-              border: OutlineInputBorder(
-                  borderSide:
-                      BorderSide(width: 1, color: ColorApp.PrimaryColor),
-                  borderRadius: BorderRadius.all(Radius.circular(10)))),
+            hintText: hintText,
+            contentPadding: EdgeInsets.all(15),
+            enabledBorder: OutlineInputBorder(
+              borderSide: BorderSide(width: 1, color: ColorApp.primaryColor),
+              borderRadius: BorderRadius.all(
+                Radius.circular(10),
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide(width: 2, color: ColorApp.primaryColor),
+              borderRadius: BorderRadius.all(
+                Radius.circular(10),
+              ),
+            ),
+            border: OutlineInputBorder(
+              borderSide: BorderSide(width: 1, color: ColorApp.primaryColor),
+              borderRadius: BorderRadius.all(
+                Radius.circular(10),
+              ),
+            ),
+          ),
         ),
       ],
     );

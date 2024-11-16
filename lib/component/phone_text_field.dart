@@ -1,6 +1,7 @@
-import '../util/SizeApp.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+
+import '../util/size_app.dart';
 
 class Country {
   final String name;
@@ -10,8 +11,10 @@ class Country {
 }
 
 class PhoneTextField extends StatefulWidget {
+  const PhoneTextField({super.key});
+
   @override
-  _PhoneTextFieldState createState() => _PhoneTextFieldState();
+  State<PhoneTextField> createState() => _PhoneTextFieldState();
 }
 
 class _PhoneTextFieldState extends State<PhoneTextField> {
@@ -21,10 +24,11 @@ class _PhoneTextFieldState extends State<PhoneTextField> {
     Country('Indonesia', '+62'),
     Country('United States', '+1'),
     Country('United Kingdom', '+44'),
-    // Add more countries as needed
+
+    // TODO: Add more countries as needed
   ];
 
-  TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
 
   @override
   void dispose() {
@@ -37,7 +41,7 @@ class _PhoneTextFieldState extends State<PhoneTextField> {
     return InputDecorator(
       decoration: InputDecoration(
         labelText: 'Phone Number',
-        labelStyle: TextStyle(fontSize: (SizeApp.SizeTextDescription + 5).sp),
+        labelStyle: TextStyle(fontSize: (SizeApp.sizeTextDescription + 5).sp),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(20.r)),
       ),
       child: Row(
@@ -54,12 +58,9 @@ class _PhoneTextFieldState extends State<PhoneTextField> {
                         children: countries
                             .map(
                               (country) => ListTile(
-                                title: Text(
-                                    country.name + "(" + country.code + ")"),
+                                title: Text("${country.name}(${country.code})"),
                                 onTap: () {
-                                  setState(() {
-                                    selectedCountry = country;
-                                  });
+                                  setState(() => selectedCountry = country);
                                   Navigator.of(context).pop();
                                 },
                               ),
@@ -73,28 +74,24 @@ class _PhoneTextFieldState extends State<PhoneTextField> {
             },
             child: Text(
               selectedCountry?.code ?? '+',
-              style: TextStyle(fontSize: SizeApp.SizeTextHeader.sp),
+              style: TextStyle(fontSize: SizeApp.sizeTextHeader.sp),
             ),
           ),
-          SizedBox(
-            width: 10.w,
-          ),
+          SizedBox(width: 10.w),
           Container(
             color: Colors.grey,
             height: 20.h,
             width: 1.w,
           ),
-          SizedBox(
-            width: 10.w,
-          ),
+          SizedBox(width: 10.w),
           Expanded(
             child: TextField(
               keyboardType: TextInputType.number,
-              style: TextStyle(fontSize: SizeApp.SizeTextHeader.sp),
+              style: TextStyle(fontSize: SizeApp.sizeTextHeader.sp),
               controller: _phoneController,
               decoration: InputDecoration(
                 hintText: 'Enter your phone number',
-                hintStyle: TextStyle(fontSize: SizeApp.SizeTextHeader.sp),
+                hintStyle: TextStyle(fontSize: SizeApp.sizeTextHeader.sp),
                 border: InputBorder.none,
                 isDense: true,
                 contentPadding: EdgeInsets.symmetric(vertical: -1.0.h),

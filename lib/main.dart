@@ -1,18 +1,17 @@
-import 'package:avatar_maker/page/PageBase.dart';
-import 'package:avatar_maker/page/intro/PageIntroGame.dart';
-import 'package:avatar_maker/page/testplay.dart';
+import 'package:avatar_maker/page/intro/page_intro_game.dart';
+import 'package:avatar_maker/page/page_base.dart';
+import 'package:flutter/material.dart';
+// import 'package:avatar_maker/page/test_play.dart';
 
 import 'package:flutter/services.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
-import 'page/maker/PageMakerCharacter.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:permission_handler/permission_handler.dart';
 
-void main() {
-  runApp(const MainApp());
-}
+// import 'package:shared_preferences/shared_preferences.dart';
+
+import 'page/maker/page_maker_character.dart';
+
+void main() => runApp(const MainApp());
 
 void requestPermissions() async {
   Map<Permission, PermissionStatus> statuses = await [
@@ -24,7 +23,7 @@ void requestPermissions() async {
       statuses[Permission.manageExternalStorage]!.isGranted) {
     // Permissions granted, you can now access external storage
   } else {
-    // Permissions not granted, handle accordingly
+    // TODO: handle permission denied
   }
 }
 
@@ -42,14 +41,21 @@ class MainApp extends StatelessWidget {
       initialRoute: PageIntroGame.routeName,
       getPages: [
         GetPage(
-            name: PageIntroGame.routeName.toString(),
-            page: () => PageIntroGame()),
-        GetPage(name: PageBase.routeName.toString(), page: () => PageBase()),
-        // GetPage(
-        //     name: Playground.routeName.toString(), page: () => Playground()),
+          name: PageIntroGame.routeName.toString(),
+          page: () => PageIntroGame(),
+        ),
         GetPage(
-            name: PageMakerCharacter.routeName.toString(),
-            page: () => PageMakerCharacter()),
+          name: PageBase.routeName.toString(),
+          page: () => PageBase(),
+        ),
+        // GetPage(
+        //   name: Playground.routeName.toString(),
+        //   page: () => Playground(),
+        // ),
+        GetPage(
+          name: PageMakerCharacter.routeName.toString(),
+          page: () => PageMakerCharacter(),
+        ),
       ],
     );
   }

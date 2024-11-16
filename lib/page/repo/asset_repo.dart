@@ -1,26 +1,27 @@
 import 'package:avatar_maker/assets_class/PartUpdate9.dart';
-import 'package:avatar_maker/page/maker/PageMakerCharacter.dart';
+import 'package:avatar_maker/page/maker/page_maker_character.dart';
 import 'package:get/get.dart';
-import '../../assets_class/Part19_class19.dart';
-import '../../assets_class/Part18_2class18.dart';
-import '../../assets_class/Part17_class17.dart';
-import '../../assets_class/Part16_class16.dart';
-import '../../assets_class/Part15_class15.dart';
-import '../../assets_class/Part14_class14.dart';
-import '../../assets_class/Part13_class13.dart';
-import '../../assets_class/Part12_class12.dart';
-import '../../assets_class/Part11_class11.dart';
-import '../../assets_class/Part10_class10.dart';
-import '../../assets_class/Part9_class9.dart';
-import '../../assets_class/Part8_class8.dart';
-import '../../assets_class/Part7_class7.dart';
-import '../../assets_class/Part6_class6.dart';
-import '../../assets_class/Part5_class5.dart';
-import '../../assets_class/Part4_class4.dart';
-import '../../assets_class/Part3_class3.dart';
-import '../../assets_class/Part2_class2.dart';
-import '../../assets_class/Part1_class1.dart';
+
 import '../../assets_class/Part0_class0.dart';
+import '../../assets_class/Part10_class10.dart';
+import '../../assets_class/Part11_class11.dart';
+import '../../assets_class/Part12_class12.dart';
+import '../../assets_class/Part13_class13.dart';
+import '../../assets_class/Part14_class14.dart';
+import '../../assets_class/Part15_class15.dart';
+import '../../assets_class/Part16_class16.dart';
+import '../../assets_class/Part17_class17.dart';
+import '../../assets_class/Part18_2class18.dart';
+import '../../assets_class/Part19_class19.dart';
+import '../../assets_class/Part1_class1.dart';
+import '../../assets_class/Part2_class2.dart';
+import '../../assets_class/Part3_class3.dart';
+import '../../assets_class/Part4_class4.dart';
+import '../../assets_class/Part5_class5.dart';
+import '../../assets_class/Part6_class6.dart';
+import '../../assets_class/Part7_class7.dart';
+import '../../assets_class/Part8_class8.dart';
+import '../../assets_class/Part9_class9.dart';
 
 class AssetRepo extends GetxController {
   var listItemMaker = <ItemMaker>[
@@ -65,6 +66,6 @@ class AssetRepo extends GetxController {
     List<String>? currentListPartFromItem =
         listItemMaker.value[itemSelectedIndex].listItem;
     currentListPartFromItem!.insertAll(0, listUpdateItem);
-    print("Update Succes");
+    print("Update Success");
   }
 }

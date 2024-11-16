@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 class OtpCodeWidget extends StatefulWidget {
+  const OtpCodeWidget({super.key});
+
   @override
-  _OtpCodeWidgetState createState() => _OtpCodeWidgetState();
+  State<OtpCodeWidget> createState() => _OtpCodeWidgetState();
 }
 
 class _OtpCodeWidgetState extends State<OtpCodeWidget> {
@@ -33,9 +35,7 @@ class _OtpCodeWidgetState extends State<OtpCodeWidget> {
         maxLength: 1,
         keyboardType: TextInputType.number,
         onChanged: (value) {
-          setState(() {
-            otpCode[index] = value;
-          });
+          setState(() => otpCode[index] = value);
         },
         decoration: InputDecoration(
           counterText: '',

@@ -1,17 +1,9 @@
-import 'package:avatar_maker/controller/AvatarController.dart';
-import 'package:avatar_maker/page/maker/PageMakerCharacter.dart';
-import 'package:avatar_maker/page/repo/AssetRepo.dart';
+import 'package:avatar_maker/component/component_button.dart';
+import 'package:avatar_maker/controller/avatar_controller.dart';
+import 'package:avatar_maker/page/maker/page_maker_character.dart';
+import 'package:avatar_maker/page/repo/asset_repo.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:avatar_maker/component/ComponentButton.dart';
-import 'package:avatar_maker/component/ComponentText.dart';
-import 'package:avatar_maker/util/ColorApp.dart';
-import 'package:drop_shadow_image/drop_shadow_image.dart';
-import 'package:flutter/material.dart';
-import 'dart:ui' as ui;
-import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-
 import 'package:get/get.dart';
 
 class PageViewCharacter extends StatefulWidget {

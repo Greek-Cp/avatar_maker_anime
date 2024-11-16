@@ -1,6 +1,6 @@
-// import 'package:avatar_maker/page/repo/AssetRepo.dart';
+// import 'package:avatar_maker/page/repo/asset_repo.dart';
 // import 'package:encrypted_asset_image/encrypted_asset_image.dart';
-// import 'package:avatar_maker/page/maker/PageMakerCharacter.dart';
+// import 'package:avatar_maker/page/maker/page_maker_character.dart';
 // import 'package:flutter/material.dart';
 // import 'dart:io';
 
@@ -9,7 +9,7 @@
 // import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 // import 'package:get/get.dart';
 // import 'package:path_provider/path_provider.dart';
-// import '../../component/ComponentItem.dart';
+// import '../../component/component_item.dart';
 
 // class Playground extends StatefulWidget {
 //   static String? routeName = "/PagePlayground";

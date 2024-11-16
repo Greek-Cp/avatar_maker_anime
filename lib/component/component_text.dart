@@ -1,63 +1,80 @@
-import '../util/ColorApp.dart';
-import '../util/SizeApp.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../util/color_app.dart';
+import '../util/size_app.dart';
+
 class ComponentTextPrimaryTittleRegular extends StatelessWidget {
-  String? teks;
-  double? size = SizeApp.SizeTextHeader;
-  Color? colorText = ColorApp.PrimaryColor;
-  TextAlign? textALign = TextAlign.start;
-  ComponentTextPrimaryTittleRegular(
-      {this.teks, this.size, this.colorText, this.textALign});
+  String? text;
+  double? size = SizeApp.sizeTextHeader;
+  Color? colorText = ColorApp.primaryColor;
+  TextAlign? textAlign = TextAlign.start;
+
+  ComponentTextPrimaryTittleRegular({
+    super.key,
+    this.text,
+    this.size,
+    this.colorText,
+    this.textAlign,
+  });
+
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return Text(
-      "$teks",
-      textAlign: textALign,
+      "$text",
+      textAlign: textAlign,
       style: GoogleFonts.poppins(
-          fontSize: this.size, textStyle: TextStyle(color: colorText)),
+        fontSize: size,
+        textStyle: TextStyle(color: colorText),
+      ),
     );
   }
 }
 
 class ComponentTextPrimaryTittleBold extends StatelessWidget {
-  String? teks;
-  double? size = SizeApp.SizeTextHeader;
-  Color? colorText = ColorApp.PrimaryColor;
+  String? text;
+  double? size = SizeApp.sizeTextHeader;
+  Color? colorText = ColorApp.primaryColor;
   TextAlign? textAlign = TextAlign.start;
 
-  ComponentTextPrimaryTittleBold(
-      {this.teks, this.size, this.colorText, this.textAlign});
+  ComponentTextPrimaryTittleBold({
+    super.key,
+    this.text,
+    this.size,
+    this.colorText,
+    this.textAlign,
+  });
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return Text(
-      "$teks",
+      "$text",
       textAlign: textAlign,
       style: GoogleFonts.poppins(
           fontWeight: FontWeight.bold,
-          fontSize: this.size,
+          fontSize: size,
           textStyle: TextStyle(color: colorText)),
     );
   }
 }
 
 class ComponentTextPrimaryDescriptionBold extends StatelessWidget {
-  String? teks;
-  double? size = SizeApp.SizeTextDescription;
-  Color? colorText = ColorApp.TextSecondaryColor;
+  String? text;
+  double? size = SizeApp.sizeTextDescription;
+  Color? colorText = ColorApp.textSecondaryColor;
   TextAlign? textAlign = TextAlign.start;
 
-  ComponentTextPrimaryDescriptionBold(
-      {this.teks, this.size, this.colorText = Colors.black, this.textAlign});
+  ComponentTextPrimaryDescriptionBold({
+    super.key,
+    this.text,
+    this.size,
+    this.colorText = Colors.black,
+    this.textAlign,
+  });
+
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return Text(
-      "$teks",
+      "$text",
       textAlign: textAlign,
       style: GoogleFonts.poppins(
         fontSize: size,
@@ -69,23 +86,25 @@ class ComponentTextPrimaryDescriptionBold extends StatelessWidget {
 }
 
 class ComponentTextPrimaryDescriptionRegular extends StatelessWidget {
-  String? teks;
-  double? size = SizeApp.SizeTextDescription;
-  Color? colorText = ColorApp.TextSecondaryColor;
+  String? text;
+  double? size = SizeApp.sizeTextDescription;
+  Color? colorText = ColorApp.textSecondaryColor;
   TextAlign? textAlign = TextAlign.start;
   FontWeight? fontWeight = FontWeight.normal;
 
-  ComponentTextPrimaryDescriptionRegular(
-      {this.teks,
-      this.size,
-      this.colorText = Colors.black,
-      this.textAlign,
-      this.fontWeight});
+  ComponentTextPrimaryDescriptionRegular({
+    super.key,
+    this.text,
+    this.size,
+    this.colorText = Colors.black,
+    this.textAlign,
+    this.fontWeight,
+  });
+
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return Text(
-      "$teks",
+      "$text",
       textAlign: textAlign,
       style: GoogleFonts.poppins(
         fontSize: size,
