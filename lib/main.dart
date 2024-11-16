@@ -1,6 +1,6 @@
-import 'package:avatar_maker_anime/page/PageBase.dart';
-import 'package:avatar_maker_anime/page/intro/PageIntroGame.dart';
-import 'package:avatar_maker_anime/page/testplay.dart';
+import 'package:avatar_maker/page/PageBase.dart';
+import 'package:avatar_maker/page/intro/PageIntroGame.dart';
+import 'package:avatar_maker/page/testplay.dart';
 
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -22,7 +22,7 @@ void requestPermissions() async {
 
   if (statuses[Permission.storage]!.isGranted &&
       statuses[Permission.manageExternalStorage]!.isGranted) {
-    // Permissions granted, you can now access external storage 
+    // Permissions granted, you can now access external storage
   } else {
     // Permissions not granted, handle accordingly
   }
@@ -45,8 +45,8 @@ class MainApp extends StatelessWidget {
             name: PageIntroGame.routeName.toString(),
             page: () => PageIntroGame()),
         GetPage(name: PageBase.routeName.toString(), page: () => PageBase()),
-        GetPage(
-            name: Playground.routeName.toString(), page: () => Playground()),
+        // GetPage(
+        //     name: Playground.routeName.toString(), page: () => Playground()),
         GetPage(
             name: PageMakerCharacter.routeName.toString(),
             page: () => PageMakerCharacter()),

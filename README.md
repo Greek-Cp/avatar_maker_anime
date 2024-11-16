@@ -1,2 +1,3 @@
-# avatar_maker_anime
- 
+# avatar_maker
+
+A new Flutter project.

@@ -1,8 +1,8 @@
-import 'package:avatar_maker_anime/component/ComponentButton.dart';
-import 'package:avatar_maker_anime/component/ComponentText.dart';
-import 'package:avatar_maker_anime/page/PageBase.dart';
-import 'package:avatar_maker_anime/page/repo/AssetRepo.dart';
-import 'package:avatar_maker_anime/util/ColorApp.dart';
+import 'package:avatar_maker/component/ComponentButton.dart';
+import 'package:avatar_maker/component/ComponentText.dart';
+import 'package:avatar_maker/page/PageBase.dart';
+import 'package:avatar_maker/page/repo/AssetRepo.dart';
+import 'package:avatar_maker/util/ColorApp.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -18,7 +18,6 @@ class _PageIntroGameState extends State<PageIntroGame> {
     super.initState();
     // Tambahkan kode untuk menunggu beberapa saat, misalnya 3 detik
 
-
     Future.delayed(Duration(seconds: 3), () {
       // Navigasi ke halaman berikutnya setelah waktu yang ditentukan
       Get.to(
@@ -27,8 +26,8 @@ class _PageIntroGameState extends State<PageIntroGame> {
         duration: Duration(seconds: 5),
       );
     });
-
   }
+
   final repoController = Get.put(AssetRepo());
   @override
   Widget build(BuildContext context) {

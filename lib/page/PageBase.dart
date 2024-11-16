@@ -1,6 +1,6 @@
-import 'package:avatar_maker_anime/page/maker/PageMakerCharacter.dart';
-import 'package:avatar_maker_anime/page/repo/AssetRepo.dart';
-import 'package:avatar_maker_anime/util/ColorApp.dart';
+import 'package:avatar_maker/page/maker/PageMakerCharacter.dart';
+import 'package:avatar_maker/page/repo/AssetRepo.dart';
+import 'package:avatar_maker/util/ColorApp.dart';
 import 'package:fluid_bottom_nav_bar/fluid_bottom_nav_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';

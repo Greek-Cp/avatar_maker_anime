@@ -1,13 +1,11 @@
-import 'package:avatar_maker_anime/controller/AvatarController.dart';
-import 'package:avatar_maker_anime/page/maker/PageMakerCharacter.dart';
-import 'package:avatar_maker_anime/page/repo/AssetRepo.dart';
+import 'package:avatar_maker/controller/AvatarController.dart';
+import 'package:avatar_maker/page/maker/PageMakerCharacter.dart';
+import 'package:avatar_maker/page/repo/AssetRepo.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:avatar_maker_anime/component/ComponentButton.dart';
-import 'package:avatar_maker_anime/component/ComponentText.dart';
-import 'package:avatar_maker_anime/util/ColorApp.dart';
-import 'package:bottom_bar_matu/utils/app_utils.dart';
-import 'package:cherry_toast/resources/arrays.dart';
+import 'package:avatar_maker/component/ComponentButton.dart';
+import 'package:avatar_maker/component/ComponentText.dart';
+import 'package:avatar_maker/util/ColorApp.dart';
 import 'package:drop_shadow_image/drop_shadow_image.dart';
 import 'package:flutter/material.dart';
 import 'dart:ui' as ui;
@@ -22,11 +20,8 @@ class PageViewCharacter extends StatefulWidget {
 }
 
 class _PageViewCharacterState extends State<PageViewCharacter> {
-
-
   final RepositoryAsset = Get.put(AssetRepo());
-  List<ItemMaker> listItemMaker = [
-  ];
+  List<ItemMaker> listItemMaker = [];
 
   late SaveAvatarController _saveAvatarController;
   @override

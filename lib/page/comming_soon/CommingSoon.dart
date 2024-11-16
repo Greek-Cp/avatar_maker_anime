@@ -1,4 +1,4 @@
-import 'package:avatar_maker_anime/component/ComponentText.dart';
+import 'package:avatar_maker/component/ComponentText.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 

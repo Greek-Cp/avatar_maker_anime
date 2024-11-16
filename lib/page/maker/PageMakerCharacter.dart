@@ -1,13 +1,9 @@
 import 'dart:math';
 
-import 'package:avatar_maker_anime/component/ComponentButton.dart';
-import 'package:avatar_maker_anime/component/ComponentText.dart';
-import 'package:avatar_maker_anime/controller/AvatarController.dart';
-import 'package:avatar_maker_anime/page/repo/AssetRepo.dart';
-import 'package:avatar_maker_anime/util/ColorApp.dart';
-import 'package:bottom_bar_matu/utils/app_utils.dart';
-import 'package:cherry_toast/resources/arrays.dart';
-import 'package:drop_shadow_image/drop_shadow_image.dart';
+import 'package:avatar_maker/component/ComponentButton.dart';
+import 'package:avatar_maker/controller/AvatarController.dart';
+import 'package:avatar_maker/page/repo/AssetRepo.dart';
+import 'package:avatar_maker/util/ColorApp.dart';
 import 'package:flutter/material.dart';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
@@ -20,7 +16,6 @@ import 'package:image_gallery_saver/image_gallery_saver.dart';
 import '../../component/ComponentItem.dart';
 
 import '../../assets_class/Part15_class15.dart';
-
 
 class PinkDialog extends StatelessWidget {
   @override
@@ -307,7 +302,8 @@ class _PageMakerCharacterState extends State<PageMakerCharacter> {
                             () => {
                                   setState(() {
                                     listImageLayer
-                                        .forEachIndexed((element, index) {
+                                        .asMap()
+                                        .forEach((index, element) {
                                       setState(() {
                                         listAvatarLayerString[index] =
                                             "assets/assets0sv1.png";
@@ -321,20 +317,34 @@ class _PageMakerCharacterState extends State<PageMakerCharacter> {
                             "assets/ui_icon/ic_random.png",
                             () => {
                                   setState(() {
-                                    listImageLayer
-                                        .forEachIndexed((element, index) {
-                                      int tnd = Random().nextInt(
-                                          listItemMaker![index]
-                                              .listItem!
-                                              .length);
-                                      listImageLayer[index] = Image.asset(
-                                          listItemMaker![index].listItem![tnd]);
+                                    for (int index = 0;
+                                        index < listImageLayer.length;
+                                        index++) {
+                                      // Pastikan `listItemMaker` dan elemen di dalamnya tidak null
+                                      if (listItemMaker != null &&
+                                          listItemMaker![index].listItem !=
+                                              null) {
+                                        // Ambil indeks acak dari `listItem`
+                                        int tnd = Random().nextInt(
+                                            listItemMaker![index]
+                                                .listItem!
+                                                .length);
 
-                                      listAvatarLayerString[index] =
-                                          listItemMaker![index]
-                                              .listItem![tnd]
-                                              .toString();
-                                    });
+                                        // Perbarui elemen `listImageLayer` dengan gambar baru
+                                        listImageLayer[index] = Image.asset(
+                                            listItemMaker![index]
+                                                .listItem![tnd]);
+
+                                        // Simpan string yang sesuai ke dalam `listAvatarLayerString`
+                                        listAvatarLayerString[index] =
+                                            listItemMaker![index]
+                                                .listItem![tnd]
+                                                .toString();
+                                      } else {
+                                        print(
+                                            "Error: listItemMaker atau elemen listItem-nya null.");
+                                      }
+                                    }
                                   })
                                 }),
                       ],
