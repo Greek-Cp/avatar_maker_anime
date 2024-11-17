@@ -2,6 +2,7 @@ import 'package:avatar_maker/component/component_button.dart';
 import 'package:avatar_maker/controller/avatar_controller.dart';
 import 'package:avatar_maker/page/maker/page_maker_character.dart';
 import 'package:avatar_maker/page/repo/asset_repo.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -12,14 +13,14 @@ class PageViewCharacter extends StatefulWidget {
 }
 
 class _PageViewCharacterState extends State<PageViewCharacter> {
-  final RepositoryAsset = Get.put(AssetRepo());
+  final repositoryAsset = Get.put(AssetRepo());
   List<ItemMaker> listItemMaker = [];
 
   late SaveAvatarController _saveAvatarController;
   @override
   void initState() {
     super.initState();
-    listItemMaker = RepositoryAsset.listItemMaker;
+    listItemMaker = repositoryAsset.listItemMaker;
     _saveAvatarController = Get.put(SaveAvatarController());
     _saveAvatarController.loadDataFromSharedPreferences();
   }
@@ -27,18 +28,16 @@ class _PageViewCharacterState extends State<PageViewCharacter> {
   @override
   Widget build(BuildContext context) {
     List<List<String>> listLayer = _saveAvatarController.listAvatar;
-    listLayer.forEach(
-      (element) {
-        print(element);
-      },
-    );
+    for (var element in listLayer) {
+      print(element);
+    }
     return Scaffold(
       body: ScreenUtilInit(
         builder: (context, child) {
           return Column(
             children: [
               Padding(
-                padding: EdgeInsets.only(top: 30),
+                padding: EdgeInsets.only(top: 6.h),
                 child: GradientCustomWidgetText("My Avatar ✨", () => {}),
               ),
               Expanded(
@@ -63,13 +62,17 @@ class _PageViewCharacterState extends State<PageViewCharacter> {
                           Positioned(
                             right: 1,
                             child: GradientButtonWithCustomIconAndFunction(
-                                "assets/ui_icon/ic_erase.png",
-                                () => {
-                                      setState(() => {
-                                            _saveAvatarController
-                                                .deleteAvatar(index),
-                                          })
-                                    }),
+                              Icon(
+                                FluentIcons.eraser_24_filled,
+                                color: Colors.white,
+                                size: 32,
+                              ),
+                              () => {
+                                setState(() {
+                                  _saveAvatarController.deleteAvatar(index);
+                                })
+                              },
+                            ),
                           ),
                         ],
                       ),

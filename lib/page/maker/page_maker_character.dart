@@ -1,9 +1,12 @@
 import 'dart:math';
 import 'dart:ui' as ui;
 
+import 'package:avatar_maker/assets_generated/Part15_class15.dart';
 import 'package:avatar_maker/component/component_button.dart';
 import 'package:avatar_maker/controller/avatar_controller.dart';
 import 'package:avatar_maker/page/repo/asset_repo.dart';
+import 'package:avatar_maker/util/color_app.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -12,9 +15,9 @@ import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:get/get.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 
-import '../../assets_class/Part15_class15.dart';
-
 class PinkDialog extends StatelessWidget {
+  const PinkDialog({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Dialog(
@@ -56,6 +59,8 @@ class PinkDialog extends StatelessWidget {
 class PageMakerCharacter extends StatefulWidget {
   static String? routeName = "/PageMakerCharacter";
 
+  const PageMakerCharacter({super.key});
+
   @override
   State<PageMakerCharacter> createState() => _PageMakerCharacterState();
 }
@@ -74,43 +79,52 @@ class _PageMakerCharacterState extends State<PageMakerCharacter> {
   List<String> listAvatarLayerString = [];
   List<int> randNumber = [];
 
-  final RepositoryAsset = Get.put(AssetRepo());
+  final repositoryAsset = Get.put(AssetRepo());
   List<ItemMaker>? listItemMaker;
   @override
   void initState() {
-    listItemMaker = RepositoryAsset.listItemMaker;
-    listImageLayer = List.generate(listItemMaker!.length, (index) {
-      int tnd = Random().nextInt(listItemMaker![index].listItem!.length);
-      randNumber.add(tnd);
-      return Image.asset(
-        listItemMaker![index].listItem![tnd],
-        fit: BoxFit.fitWidth,
-      );
-    });
-    listAvatarLayerString = List.generate(listImageLayer.length,
-        (index) => listItemMaker![index].listItem![randNumber[index]]);
+    listItemMaker = repositoryAsset.listItemMaker;
+    listImageLayer = List.generate(
+      listItemMaker!.length,
+      (index) {
+        int tnd = Random().nextInt(listItemMaker![index].listItem!.length);
+        randNumber.add(tnd);
+        return Image.asset(
+          listItemMaker![index].listItem![tnd],
+          fit: BoxFit.fitWidth,
+        );
+      },
+    );
+    listAvatarLayerString = List.generate(
+      listImageLayer.length,
+      (index) => listItemMaker![index].listItem![randNumber[index]],
+    );
     super.initState();
   }
 
-  Widget ComponentItemAvatar(
-      ItemMaker itemMaker, double width, double heigth, int index) {
+  Widget componentItemAvatar(
+    ItemMaker itemMaker,
+    double width,
+    double height,
+    int index,
+  ) {
     return AnimatedContainer(
       duration: Duration(milliseconds: 300), // Durasi animasi
       curve: Curves.easeInOut, // Kurva animasi
-      margin: EdgeInsets.symmetric(horizontal: 10.0), // Padding antar item
+      margin: EdgeInsets.all(10.0), // Padding antar item
       width: partSelected == index ? 105.0 : 90, // Lebar item
       height: partSelected == index ? 0 : 0.0, // Tinggi item
       decoration: BoxDecoration(
         shape: BoxShape.rectangle,
-        borderRadius: BorderRadius.circular(30.0),
+        borderRadius: BorderRadius.circular(12.0),
         gradient: LinearGradient(
           colors: partSelected == index
               ? [
                   Color.fromRGBO(255, 56, 182, 1),
-                  Color.fromRGBO(255, 26, 136, 1),
+                  ColorApp.primaryColor,
                 ]
               : [
-                  Color.fromRGBO(255, 255, 255, 1),
+                  Color.fromRGBO(250, 230, 230, 1),
                   Color.fromRGBO(255, 255, 255, 1),
                 ],
           begin: Alignment.topLeft,
@@ -138,7 +152,7 @@ class _PageMakerCharacterState extends State<PageMakerCharacter> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Image Layers'),
-          content: Container(
+          content: SizedBox(
             width: double.maxFinite,
             child: ListView.builder(
               shrinkWrap: true,
@@ -147,20 +161,22 @@ class _PageMakerCharacterState extends State<PageMakerCharacter> {
                 return Row(
                   children: [
                     Expanded(
-                      child: Container(
-                          width: 100,
-                          height: 100,
-                          child: listImageLayer[index]),
+                      child: SizedBox(
+                        width: 100,
+                        height: 100,
+                        child: listImageLayer[index],
+                      ),
                     ),
                     GradientButtonWithCustomIconAndFunction(
-                        "assets/ui_icon/ic_erase.png",
-                        () => {
-                              setState(() {
-                                listImageLayer[index] =
-                                    Image.asset("assets/assets0sv1.png");
-                                Navigator.of(context).pop();
-                              }),
-                            }),
+                      Icon(FluentIcons.eraser_24_filled),
+                      () => setState(
+                        () {
+                          listImageLayer[index] =
+                              Image.asset("assets/assets0sv1.png");
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ),
                   ],
                 );
               },
@@ -168,27 +184,33 @@ class _PageMakerCharacterState extends State<PageMakerCharacter> {
           ),
           actions: <Widget>[
             GradientCustomWidgetText(
-                "Kembali ✨", () => {Navigator.of(context).pop()})
+              "Kembali ✨",
+              () => Navigator.of(context).pop(),
+            )
           ],
         );
       },
     );
   }
 
-  Widget ComponentItemPart(
-      String? assetName, double width, double heigth, int index) {
+  Widget componentItemPart(
+    String? assetName,
+    double width,
+    double height,
+    int index,
+  ) {
     return Container(
       decoration: BoxDecoration(
         shape: BoxShape.rectangle,
-        borderRadius: BorderRadius.circular(30.r),
+        borderRadius: BorderRadius.circular(12.r),
         gradient: LinearGradient(
           colors: itemSelected == index
               ? [
                   Color.fromRGBO(255, 56, 182, 1),
-                  Color.fromRGBO(255, 26, 136, 1),
+                  ColorApp.primaryColor,
                 ]
               : [
-                  Color.fromRGBO(255, 255, 255, 1),
+                  Color.fromRGBO(250, 230, 230, 1),
                   Color.fromRGBO(255, 255, 255, 1),
                 ],
           begin: Alignment.topLeft,
@@ -200,12 +222,12 @@ class _PageMakerCharacterState extends State<PageMakerCharacter> {
           Image.asset(
             Part15_class15.asset_0,
             width: width,
-            height: heigth,
+            height: height,
           ),
           Image.asset(
             assetName.toString(),
             width: width,
-            height: heigth,
+            height: height,
           ),
         ],
       ),
@@ -246,8 +268,6 @@ class _PageMakerCharacterState extends State<PageMakerCharacter> {
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
-
     return Scaffold(
       body: ScreenUtilInit(
         builder: (context, child) {
@@ -261,8 +281,10 @@ class _PageMakerCharacterState extends State<PageMakerCharacter> {
                     child: RepaintBoundary(
                       key: globalKey,
                       child: Stack(
-                        children: List.generate(listImageLayer.length,
-                            (index) => listImageLayer[index]),
+                        children: List.generate(
+                          listImageLayer.length,
+                          (index) => listImageLayer[index],
+                        ),
                       ),
                     ),
                   ),
@@ -270,89 +292,112 @@ class _PageMakerCharacterState extends State<PageMakerCharacter> {
                     right: 1,
                     bottom: 1,
                     child: GradientButtonWithCustomIconAndFunction(
-                        "assets/ui_icon/ic_camera.png",
-                        () => {
-                              _saveAvatarController
-                                  .saveAvatar(listAvatarLayerString),
-                              _saveAvatarController
-                                  .loadDataFromSharedPreferences(),
-                              saveWidgetAsImage(),
-                              Get.snackbar("Congratulations Your Anime Saved",
-                                  "check your gallery now",
-                                  icon: Icon(Icons.person_4),
-                                  snackStyle: SnackStyle.FLOATING),
-                            }),
+                      Icon(
+                        FluentIcons.camera_24_filled,
+                        color: Colors.white,
+                        size: 32,
+                      ),
+                      () => {
+                        _saveAvatarController.saveAvatar(listAvatarLayerString),
+                        _saveAvatarController.loadDataFromSharedPreferences(),
+                        saveWidgetAsImage(),
+                        Get.snackbar(
+                          "Congratulations Your Anime Saved",
+                          "check your gallery now",
+                          icon: Icon(Icons.person_4),
+                          snackStyle: SnackStyle.FLOATING,
+                        ),
+                      },
+                    ),
                   ),
                   Positioned(
                     bottom: 1,
                     child: Column(
                       children: [
                         GradientButtonWithCustomIconAndFunction(
-                            "assets/ui_icon/ic_layer.png",
-                            () => {
-                                  setState(() {
-                                    showImageLayerDialog(context);
-                                  })
-                                }),
+                          Icon(
+                            FluentIcons.layer_24_filled,
+                            color: Colors.white,
+                            size: 32,
+                          ),
+                          () => setState(
+                            () => showImageLayerDialog(context),
+                          ),
+                        ),
                         GradientButtonWithCustomIconAndFunction(
-                            "assets/ui_icon/ic_erase.png",
-                            () => {
-                                  setState(() {
-                                    listImageLayer
-                                        .asMap()
-                                        .forEach((index, element) {
-                                      setState(() {
+                          Icon(
+                            FluentIcons.eraser_24_filled,
+                            color: Colors.white,
+                            size: 32,
+                          ),
+                          () => {
+                            setState(
+                              () {
+                                listImageLayer.asMap().forEach(
+                                  (index, element) {
+                                    setState(
+                                      () {
                                         listAvatarLayerString[index] =
                                             "assets/assets0sv1.png";
                                         listImageLayer[index] = Image.asset(
-                                            "assets/assets0sv1.png");
-                                      });
-                                    });
-                                  })
-                                }),
+                                          "assets/assets0sv1.png",
+                                        );
+                                      },
+                                    );
+                                  },
+                                );
+                              },
+                            )
+                          },
+                        ),
                         GradientButtonWithCustomIconAndFunction(
-                            "assets/ui_icon/ic_random.png",
-                            () => {
-                                  setState(() {
-                                    for (int index = 0;
-                                        index < listImageLayer.length;
-                                        index++) {
-                                      // Pastikan `listItemMaker` dan elemen di dalamnya tidak null
-                                      if (listItemMaker != null &&
-                                          listItemMaker![index].listItem !=
-                                              null) {
-                                        // Ambil indeks acak dari `listItem`
-                                        int tnd = Random().nextInt(
-                                            listItemMaker![index]
-                                                .listItem!
-                                                .length);
+                          Icon(
+                            FluentIcons.star_emphasis_24_filled,
+                            color: Colors.white,
+                            size: 32,
+                          ),
+                          () => setState(
+                            () {
+                              for (int index = 0;
+                                  index < listImageLayer.length;
+                                  index++) {
+                                // Pastikan `listItemMaker` dan elemen di dalamnya tidak null
+                                if (listItemMaker != null &&
+                                    listItemMaker![index].listItem != null) {
+                                  // Ambil indeks acak dari `listItem`
+                                  int tnd = Random().nextInt(
+                                      listItemMaker![index].listItem!.length);
 
-                                        // Perbarui elemen `listImageLayer` dengan gambar baru
-                                        listImageLayer[index] = Image.asset(
-                                            listItemMaker![index]
-                                                .listItem![tnd]);
+                                  // Perbarui elemen `listImageLayer` dengan gambar baru
+                                  listImageLayer[index] = Image.asset(
+                                    listItemMaker![index].listItem![tnd],
+                                  );
 
-                                        // Simpan string yang sesuai ke dalam `listAvatarLayerString`
-                                        listAvatarLayerString[index] =
-                                            listItemMaker![index]
-                                                .listItem![tnd]
-                                                .toString();
-                                      } else {
-                                        print(
-                                            "Error: listItemMaker atau elemen listItem-nya null.");
-                                      }
-                                    }
-                                  })
-                                }),
+                                  // Simpan string yang sesuai ke dalam `listAvatarLayerString`
+                                  listAvatarLayerString[index] =
+                                      listItemMaker![index]
+                                          .listItem![tnd]
+                                          .toString();
+                                } else {
+                                  print(
+                                      "Error: listItemMaker atau elemen listItem-nya null.");
+                                }
+                              }
+                            },
+                          ),
+                        ),
                       ],
                     ),
                   ),
                   Padding(
-                    padding: EdgeInsets.only(top: 25.h),
+                    padding: EdgeInsets.only(top: 6.h),
                     child: Align(
-                        alignment: Alignment.center,
-                        child: GradientCustomWidgetText(
-                            "Anime Maker ✨", () => {})),
+                      alignment: Alignment.center,
+                      child: GradientCustomWidgetText(
+                        "Anime Maker ✨",
+                        () => {},
+                      ),
+                    ),
                   )
                 ],
               ),
@@ -365,63 +410,70 @@ class _PageMakerCharacterState extends State<PageMakerCharacter> {
                     scrollDirection: Axis.horizontal,
                     physics: PageScrollPhysics(),
                     children: List.generate(
-                        listItemMaker!.length,
-                        (index) => AnimationConfiguration.staggeredList(
-                              position: index,
-                              child: GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    partSelected = index;
-                                  });
-                                },
-                                child: ScaleAnimation(
-                                  child: ComponentItemAvatar(
-                                      listItemMaker![index], 100, 100, index),
-                                ),
-                              ),
-                            )),
+                      listItemMaker!.length,
+                      (index) => AnimationConfiguration.staggeredList(
+                        position: index,
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() => partSelected = index);
+                          },
+                          child: ScaleAnimation(
+                            child: componentItemAvatar(
+                              listItemMaker![index],
+                              100,
+                              100,
+                              index,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),
-              Container(
-                child: Expanded(
-                  child: AnimationLimiter(
-                    child: GridView.count(
-                      crossAxisCount: 5, // Number of columns
-                      children: List.generate(
-                          listItemMaker![partSelected].listItem!.length,
-                          (index) {
+              Expanded(
+                child: AnimationLimiter(
+                  child: GridView.count(
+                    crossAxisCount: 5, // Number of columns
+                    children: List.generate(
+                      listItemMaker![partSelected].listItem!.length,
+                      (index) {
                         return AnimationConfiguration.staggeredGrid(
                           columnCount: 5,
                           position: index,
                           child: GestureDetector(
                             onTap: () {
-                              setState(() {
-                                listAvatarLayerString[partSelected] =
+                              setState(
+                                () {
+                                  listAvatarLayerString[partSelected] =
+                                      listItemMaker![partSelected]
+                                          .listItem![index]
+                                          .toString();
+                                  listImageLayer[partSelected] = Image.asset(
                                     listItemMaker![partSelected]
-                                        .listItem![index]
-                                        .toString();
-
-                                listImageLayer[partSelected] = Image.asset(
-                                    listItemMaker![partSelected]
-                                        .listItem![index]);
-
-                                itemSelected = index;
-                              });
+                                        .listItem![index],
+                                  );
+                                  itemSelected = index;
+                                },
+                              );
                             },
-                            child: ScaleAnimation(
-                              child: FadeInAnimation(
-                                child: ComponentItemPart(
+                            child: Container(
+                              padding: EdgeInsets.all(4),
+                              child: ScaleAnimation(
+                                child: FadeInAnimation(
+                                  child: componentItemPart(
                                     listItemMaker![partSelected]
                                         .listItem![index],
                                     200,
                                     200,
-                                    index),
+                                    index,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
                         );
-                      }),
+                      },
                     ),
                   ),
                 ),
@@ -435,6 +487,8 @@ class _PageMakerCharacterState extends State<PageMakerCharacter> {
 }
 
 class PinkTextBackground extends StatelessWidget {
+  const PinkTextBackground({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -444,7 +498,7 @@ class PinkTextBackground extends StatelessWidget {
       ),
       padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
       child: Text(
-        'Your text goes here',
+        '',
         style: TextStyle(
           color: Colors.white,
           fontSize: 16.0,

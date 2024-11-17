@@ -1,5 +1,6 @@
 import 'package:avatar_maker/page/intro/page_intro_game.dart';
 import 'package:avatar_maker/page/page_base.dart';
+import 'package:avatar_maker/util/color_app.dart';
 import 'package:flutter/material.dart';
 // import 'package:avatar_maker/page/test_play.dart';
 
@@ -32,8 +33,12 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack);
-    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle());
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    SystemChrome.setSystemUIOverlayStyle(
+      SystemUiOverlayStyle(
+        statusBarColor: ColorApp.primaryColor,
+      ),
+    );
     requestPermissions();
 
     return GetMaterialApp(

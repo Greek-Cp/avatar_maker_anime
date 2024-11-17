@@ -1,11 +1,11 @@
 import 'package:avatar_maker/page/maker/page_maker_character.dart';
 import 'package:avatar_maker/page/repo/asset_repo.dart';
+import 'package:avatar_maker/page/viewcharacter/page_view_character.dart';
 import 'package:avatar_maker/util/color_app.dart';
-import 'package:fluid_bottom_nav_bar/fluid_bottom_nav_bar.dart';
+import 'package:flashy_tab_bar2/flashy_tab_bar2.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-import 'viewcharacter/page_view_character.dart';
 
 class PageBase extends StatefulWidget {
   static String? routeName = "/PageBase";
@@ -35,33 +35,28 @@ class _PageBaseState extends State<PageBase> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: listPage[selectedPage],
-      bottomNavigationBar: FluidNavBar(
-        scaleFactor: 2,
-        style: FluidNavBarStyle(
-          barBackgroundColor: ColorApp.primaryColor,
-          iconSelectedForegroundColor: Colors.white,
-        ),
-        onChange: (selectedIndex) {
-          setState(() {
-            selectedPage = selectedIndex;
-          });
-        },
-        icons: [
-          FluidNavBarIcon(
-            icon: Icons.home_filled,
-            unselectedForegroundColor: Colors.white,
-            selectedForegroundColor: Colors.white,
-            extras: {
-              "label": "bookmark",
-            },
+      bottomNavigationBar: FlashyTabBar(
+        shadows: [],
+        iconSize: 32,
+        height: 56,
+        showElevation: true,
+        backgroundColor: ColorApp.backgroundNavigationBottomColor,
+        selectedIndex: selectedPage,
+        onItemSelected: (index) => setState(() {
+          selectedPage = index;
+        }),
+        items: [
+          FlashyTabBarItem(
+            activeColor: ColorApp.primaryColor,
+            inactiveColor: ColorApp.primaryColor,
+            icon: Icon(FluentIcons.home_24_filled),
+            title: Text('Playground'),
           ),
-          FluidNavBarIcon(
-            icon: Icons.history,
-            unselectedForegroundColor: Colors.white,
-            selectedForegroundColor: Colors.white,
-            extras: {
-              "label": "bookmark",
-            },
+          FlashyTabBarItem(
+            activeColor: ColorApp.primaryColor,
+            inactiveColor: ColorApp.primaryColor,
+            icon: Icon(FluentIcons.history_24_filled),
+            title: Text('History'),
           ),
         ],
       ),

@@ -229,11 +229,11 @@ class ComponentButtonSecondary extends StatelessWidget {
 }
 
 class GradientButtonWithCustomIconAndFunction extends StatefulWidget {
-  final String? assetImage;
+  final Icon? icon;
   final Function? func;
 
   const GradientButtonWithCustomIconAndFunction(
-    this.assetImage,
+    this.icon,
     this.func, {
     super.key,
   });
@@ -245,41 +245,105 @@ class GradientButtonWithCustomIconAndFunction extends StatefulWidget {
 
 class _GradientButtonWithCustomIconAndFunctionState
     extends State<GradientButtonWithCustomIconAndFunction> {
-  double buttonSize = 56.0;
+  double buttonSize = 48.0;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(
-        left: 10.h,
-        top: 10.h,
-        bottom: 10.h,
-        right: 10.h,
-      ),
+      padding: EdgeInsets.all(8.h),
       child: Material(
         elevation: 8.0,
         shape: CircleBorder(),
         child: GestureDetector(
           onTapDown: (_) {
-            setState(() => buttonSize = 76.0);
+            setState(() => buttonSize = 52.0);
           },
           onTapUp: (_) {
-            setState(() => buttonSize = 56.0);
+            setState(() => buttonSize = 48.0);
             widget.func?.call();
           },
           onTapCancel: () {
-            setState(() => buttonSize = 56.0);
+            setState(() => buttonSize = 48.0);
           },
           child: AnimatedContainer(
-            duration: Duration(milliseconds: 200),
-            width: buttonSize.w,
+            duration: Duration(milliseconds: 100),
+            width: buttonSize.w + 8,
             height: buttonSize.h,
             decoration: BoxDecoration(
-              shape: BoxShape.circle,
+              borderRadius: BorderRadius.all(
+                Radius.circular(12),
+              ),
+              shape: BoxShape.rectangle,
               gradient: LinearGradient(
                 colors: [
                   Color.fromRGBO(255, 56, 182, 1),
-                  Color.fromRGBO(255, 26, 136, 1),
+                  ColorApp.primaryColor,
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            child: Padding(
+              padding: EdgeInsets.all(10.0),
+              child: widget.icon,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class GradientButtonWithCustomImageAndFunction extends StatefulWidget {
+  final String? assetImage;
+  final Function? func;
+
+  const GradientButtonWithCustomImageAndFunction(
+    this.assetImage,
+    this.func, {
+    super.key,
+  });
+
+  @override
+  State<GradientButtonWithCustomImageAndFunction> createState() =>
+      _GradientButtonWithCustomImageAndFunctionState();
+}
+
+class _GradientButtonWithCustomImageAndFunctionState
+    extends State<GradientButtonWithCustomImageAndFunction> {
+  double buttonSize = 48.0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.all(8.h),
+      child: Material(
+        elevation: 8.0,
+        shape: CircleBorder(),
+        child: GestureDetector(
+          onTapDown: (_) {
+            setState(() => buttonSize = 52.0);
+          },
+          onTapUp: (_) {
+            setState(() => buttonSize = 48.0);
+            widget.func?.call();
+          },
+          onTapCancel: () {
+            setState(() => buttonSize = 48.0);
+          },
+          child: AnimatedContainer(
+            duration: Duration(milliseconds: 100),
+            width: buttonSize.w + 8,
+            height: buttonSize.h,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.all(
+                Radius.circular(12),
+              ),
+              shape: BoxShape.rectangle,
+              gradient: LinearGradient(
+                colors: [
+                  Color.fromRGBO(255, 56, 182, 1),
+                  ColorApp.primaryColor,
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -289,8 +353,8 @@ class _GradientButtonWithCustomIconAndFunctionState
               padding: EdgeInsets.all(10.0),
               child: Image.asset(
                 widget.assetImage.toString(),
-                width: 28.0.w,
-                height: 28.0.h,
+                width: 24.w,
+                height: 24.h,
               ),
             ),
           ),
@@ -330,7 +394,7 @@ class GradientCustomWidgetText extends StatelessWidget {
               gradient: LinearGradient(
                 colors: [
                   Color.fromRGBO(255, 56, 182, 1),
-                  Color.fromRGBO(255, 26, 136, 1),
+                  ColorApp.primaryColor,
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,

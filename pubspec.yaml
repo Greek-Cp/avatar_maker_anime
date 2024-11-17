@@ -16,12 +16,13 @@ dependencies:
   permission_handler: ^11.3.1
   drop_shadow_image: ^0.9.1
   flutter_staggered_animations: ^1.1.1
-  fluid_bottom_nav_bar: ^1.4.0
   widgets_to_image: ^1.0.0
   image_gallery_saver:
     git:
       url: https://github.com/knottx/image_gallery_saver   # https://pub.dev/packages/image_gallery_saver
       ref: knottx
+  flashy_tab_bar2: ^0.0.10
+  fluentui_system_icons: ^1.1.264
 dev_dependencies:
   flutter_test:
     sdk: flutter
