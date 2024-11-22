@@ -298,6 +298,7 @@ class _PageMakerCharacterState extends State<PageMakerCharacter> {
                         size: 32,
                       ),
                       () => {
+                        // TODO: add ads service
                         _saveAvatarController.saveAvatar(listAvatarLayerString),
                         _saveAvatarController.loadDataFromSharedPreferences(),
                         saveWidgetAsImage(),

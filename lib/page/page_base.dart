@@ -20,6 +20,7 @@ class _PageBaseState extends State<PageBase> {
   List<Widget> listPage = [
     SafeArea(child: PageMakerCharacter()),
     SafeArea(child: PageViewCharacter()),
+    SafeArea(child: PageViewCharacter()),
   ];
 
   int selectedPage = 0;
@@ -57,6 +58,12 @@ class _PageBaseState extends State<PageBase> {
             inactiveColor: ColorApp.primaryColor,
             icon: Icon(FluentIcons.history_24_filled),
             title: Text('History'),
+          ),
+          FlashyTabBarItem(
+            activeColor: ColorApp.primaryColor,
+            inactiveColor: ColorApp.primaryColor,
+            icon: Icon(FluentIcons.person_24_filled),
+            title: Text('Account'),
           ),
         ],
       ),

@@ -1,18 +1,18 @@
 import 'package:avatar_maker/page/intro/page_intro_game.dart';
+import 'package:avatar_maker/page/maker/page_maker_character.dart';
 import 'package:avatar_maker/page/page_base.dart';
 import 'package:avatar_maker/util/color_app.dart';
 import 'package:flutter/material.dart';
-// import 'package:avatar_maker/page/test_play.dart';
-
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-// import 'package:shared_preferences/shared_preferences.dart';
-
-import 'page/maker/page_maker_character.dart';
-
-void main() => runApp(const MainApp());
+Future main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
+  runApp(const MainApp());
+}
 
 void requestPermissions() async {
   Map<Permission, PermissionStatus> statuses = await [
