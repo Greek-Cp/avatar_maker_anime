@@ -51,10 +51,7 @@ class _RegisterPageState extends State<RegisterPage> {
         Toast.showErrorToast(context, message);
       }
     } catch (e) {
-      // TODO: handle error
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An error occurred. Please try again.')),
-      );
+      Toast.showErrorToast(context, 'An error occurred. Please try again.');
     } finally {
       setState(() => _isLoading = false);
     }
