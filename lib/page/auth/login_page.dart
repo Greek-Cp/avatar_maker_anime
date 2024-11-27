@@ -1,9 +1,13 @@
+import 'package:avatar_maker/component/button.dart';
 import 'package:avatar_maker/page/auth/register_page.dart';
+import 'package:avatar_maker/page/page_base.dart';
+import 'package:avatar_maker/service/authentication.dart';
 import 'package:avatar_maker/util/color_app.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:sign_in_button/sign_in_button.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -13,6 +17,7 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final AuthService _authService = AuthService();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
@@ -27,6 +32,22 @@ class _LoginPageState extends State<LoginPage> {
     setState(() {
       _isLoading = true;
     });
+  }
+
+  Future<void> _loginWithGoogle() async {
+    FocusScope.of(context).unfocus();
+    final response = await _authService.loginWithGoogle();
+    if (response != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Login successful!")),
+      );
+      _authService.saveUserAfterLogin(response);
+      Get.to(PageBase());
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Login failed!")),
+      );
+    }
   }
 
   @override
@@ -76,7 +97,7 @@ class _LoginPageState extends State<LoginPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Login',
+                          'Welcome Back!',
                           style: TextStyle(
                             color: Colors.black,
                             fontSize: 32.0,
@@ -165,41 +186,10 @@ class _LoginPageState extends State<LoginPage> {
                           ],
                         ),
                         const SizedBox(height: 30.0),
-                        Material(
-                          shape: CircleBorder(),
-                          child: GestureDetector(
-                            onTap: () => _login(),
-                            child: Container(
-                              alignment: Alignment.center,
-                              width: double.infinity,
-                              height: 48,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.all(
-                                  Radius.circular(12),
-                                ),
-                                shape: BoxShape.rectangle,
-                                gradient: LinearGradient(
-                                  colors: [
-                                    Color.fromRGBO(255, 56, 182, 1),
-                                    ColorApp.primaryColor,
-                                  ],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ),
-                              ),
-                              child: _isLoading
-                                  ? CircularProgressIndicator()
-                                  : Text(
-                                      'Sign In',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                            ),
-                          ),
+                        Button(
+                          text: 'Sign In',
+                          onTap: () => _login(),
+                          isLoading: _isLoading,
                         ),
                         const SizedBox(height: 10.0),
                         Row(
@@ -213,7 +203,7 @@ class _LoginPageState extends State<LoginPage> {
                                     style: TextStyle(color: Colors.black),
                                   ),
                                   TextSpan(
-                                    text: 'Register here',
+                                    text: 'Sign Up here',
                                     style: TextStyle(
                                       color: Colors.blue[900],
                                       decoration: TextDecoration.underline,
@@ -224,6 +214,30 @@ class _LoginPageState extends State<LoginPage> {
                                 ],
                               ),
                             )
+                          ],
+                        ),
+                        const SizedBox(height: 12.0),
+                        const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'OR',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12.0),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SignInButton(
+                              Buttons.googleDark,
+                              text: "Sign in with Google",
+                              onPressed: () => _loginWithGoogle(),
+                            ),
                           ],
                         ),
                       ],

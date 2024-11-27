@@ -2,7 +2,7 @@ import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:avatar_maker/assets_generated/Part15_class15.dart';
-import 'package:avatar_maker/component/component_button.dart';
+import 'package:avatar_maker/component/button.dart';
 import 'package:avatar_maker/controller/avatar_controller.dart';
 import 'package:avatar_maker/page/repo/asset_repo.dart';
 import 'package:avatar_maker/util/color_app.dart';

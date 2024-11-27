@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:avatar_maker/component/button.dart';
 import 'package:avatar_maker/page/auth/login_page.dart';
 import 'package:avatar_maker/service/authentication.dart';
 import 'package:avatar_maker/util/color_app.dart';
@@ -105,7 +106,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Register',
+                          'You\'re New Here?',
                           style: TextStyle(
                             color: Colors.black,
                             fontSize: 32.0,
@@ -189,41 +190,10 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                         ),
                         const SizedBox(height: 30.0),
-                        Material(
-                          shape: CircleBorder(),
-                          child: GestureDetector(
-                            onTap: () => _register(),
-                            child: Container(
-                              alignment: Alignment.center,
-                              width: double.infinity,
-                              height: 48,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.all(
-                                  Radius.circular(12),
-                                ),
-                                shape: BoxShape.rectangle,
-                                gradient: LinearGradient(
-                                  colors: [
-                                    Color.fromRGBO(255, 56, 182, 1),
-                                    ColorApp.primaryColor,
-                                  ],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ),
-                              ),
-                              child: _isLoading
-                                  ? CircularProgressIndicator()
-                                  : Text(
-                                      'Sign Up',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                            ),
-                          ),
+                        Button(
+                          text: 'Sign Up',
+                          onTap: () => _register(),
+                          isLoading: _isLoading,
                         ),
                         const SizedBox(height: 10.0),
                         Row(
@@ -237,7 +207,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                     style: TextStyle(color: Colors.black),
                                   ),
                                   TextSpan(
-                                    text: 'Login here',
+                                    text: 'Sign In here',
                                     style: TextStyle(
                                       color: Colors.blue[900],
                                       decoration: TextDecoration.underline,

@@ -1,4 +1,4 @@
-import 'package:avatar_maker/page/intro/page_intro_game.dart';
+import 'package:avatar_maker/page/intro/splash_page.dart';
 import 'package:avatar_maker/page/maker/page_maker_character.dart';
 import 'package:avatar_maker/page/page_base.dart';
 import 'package:avatar_maker/util/color_app.dart';
@@ -43,20 +43,16 @@ class MainApp extends StatelessWidget {
 
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      initialRoute: PageIntroGame.routeName,
+      initialRoute: SplashPage.routeName,
       getPages: [
         GetPage(
-          name: PageIntroGame.routeName.toString(),
-          page: () => PageIntroGame(),
+          name: SplashPage.routeName.toString(),
+          page: () => SplashPage(),
         ),
         GetPage(
           name: PageBase.routeName.toString(),
           page: () => PageBase(),
         ),
-        // GetPage(
-        //   name: Playground.routeName.toString(),
-        //   page: () => Playground(),
-        // ),
         GetPage(
           name: PageMakerCharacter.routeName.toString(),
           page: () => PageMakerCharacter(),

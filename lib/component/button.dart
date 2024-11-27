@@ -1,9 +1,9 @@
+import 'package:avatar_maker/util/color_app.dart';
+import 'package:avatar_maker/util/size_app.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../util/color_app.dart';
-import '../util/size_app.dart';
-import 'component_text.dart';
+import 'package:avatar_maker/component/component_text.dart';
 
 class ComponentButtonPrimary extends StatelessWidget {
   String? buttonName;
@@ -409,6 +409,98 @@ class GradientCustomWidgetText extends StatelessWidget {
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class Button extends StatelessWidget {
+  final String? text;
+  final bool isLoading;
+  final GestureTapCallback? onTap;
+
+  const Button({
+    super.key,
+    this.text,
+    this.isLoading = false,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      shape: CircleBorder(),
+      child: GestureDetector(
+        onTap: onTap ?? () {},
+        child: Container(
+          alignment: Alignment.center,
+          width: double.infinity,
+          height: 48,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.all(
+              Radius.circular(7),
+            ),
+            color: ColorApp.primaryColor,
+            shape: BoxShape.rectangle,
+          ),
+          child: isLoading
+              ? CircularProgressIndicator()
+              : Text(
+                  text ?? '',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+        ),
+      ),
+    );
+  }
+}
+
+class ButtonSecondary extends StatelessWidget {
+  final String? text;
+  final bool isLoading;
+  final GestureTapCallback? onTap;
+
+  const ButtonSecondary({
+    super.key,
+    this.text,
+    this.isLoading = false,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      shape: CircleBorder(),
+      child: GestureDetector(
+        onTap: onTap ?? () {},
+        child: Container(
+          alignment: Alignment.center,
+          width: double.infinity,
+          height: 48,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.all(
+              Radius.circular(7),
+            ),
+            color: ColorApp.primaryColor,
+            shape: BoxShape.rectangle,
+          ),
+          child: isLoading
+              ? CircularProgressIndicator()
+              : Text(
+                  text ?? '',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: ColorApp.primaryColor,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
         ),
       ),
     );

@@ -1,6 +1,6 @@
-// import 'package:avatar_maker/page/repo/asset_repo.dart';
+// import 'package:avatarmakeranime/page/repo/asset_repo.dart';
 // import 'package:encrypted_asset_image/encrypted_asset_image.dart';
-// import 'package:avatar_maker/page/maker/page_maker_character.dart';
+// import 'package:avatarmakeranime/page/maker/page_maker_character.dart';
 // import 'package:flutter/material.dart';
 // import 'dart:io';
 

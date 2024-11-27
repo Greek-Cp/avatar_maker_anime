@@ -1,32 +1,33 @@
 import 'package:avatar_maker/component/component_text.dart';
-import 'package:avatar_maker/page/auth/register_page.dart';
-// import 'package:avatar_maker/page/page_base.dart';
-import 'package:avatar_maker/page/repo/asset_repo.dart';
+import 'package:avatar_maker/page/intro/wizard_page.dart';
+import 'package:avatar_maker/page/page_base.dart';
+import 'package:avatar_maker/service/authentication.dart';
 import 'package:avatar_maker/util/color_app.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-class PageIntroGame extends StatefulWidget {
-  static String? routeName = "/PageIntroGame";
+class SplashPage extends StatefulWidget {
+  static String? routeName = "/SplashPage";
 
-  const PageIntroGame({super.key});
+  const SplashPage({super.key});
 
   @override
-  State<PageIntroGame> createState() => _PageIntroGameState();
+  State<SplashPage> createState() => _SplashPageState();
 }
 
-class _PageIntroGameState extends State<PageIntroGame> {
-  final repoController = Get.put(AssetRepo());
+class _SplashPageState extends State<SplashPage> {
+  final authService = AuthService();
 
   @override
-  void initState() {
+  Future<void> initState() async {
     super.initState();
+    final isLoggedIn = await authService.isLoggedIn();
 
     // Tambahkan kode untuk menunggu beberapa saat, misalnya 3 detik
     Future.delayed(Duration(seconds: 3), () {
       // Navigasi ke halaman berikutnya setelah waktu yang ditentukan
-      Get.to(RegisterPage()); // PageBase()
+      Get.to(isLoggedIn ? PageBase() : WizardPage());
     });
   }
 

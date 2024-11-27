@@ -1,4 +1,4 @@
-package com.example.avatar_maker
+package com.lokalan.avatarmakeranime
 
 import io.flutter.embedding.android.FlutterActivity
 

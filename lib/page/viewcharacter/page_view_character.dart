@@ -1,4 +1,4 @@
-import 'package:avatar_maker/component/component_button.dart';
+import 'package:avatar_maker/component/button.dart';
 import 'package:avatar_maker/controller/avatar_controller.dart';
 import 'package:avatar_maker/page/maker/page_maker_character.dart';
 import 'package:avatar_maker/page/repo/asset_repo.dart';
