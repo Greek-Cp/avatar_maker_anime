@@ -1,9 +1,9 @@
 import 'package:avatar_maker/component/button.dart';
+import 'package:avatar_maker/component/text_field.dart';
 import 'package:avatar_maker/page/auth/register_page.dart';
 import 'package:avatar_maker/page/playground_page.dart';
 import 'package:avatar_maker/service/authentication.dart';
 import 'package:avatar_maker/util/color_app.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -25,7 +25,6 @@ class _LoginPageState extends State<LoginPage> {
   final _passwordController = TextEditingController();
 
   bool _isLoading = false;
-  bool _hidePassword = true;
 
   Future<void> _login() async {
     FocusScope.of(context).unfocus();
@@ -125,59 +124,10 @@ class _LoginPageState extends State<LoginPage> {
                             fontWeight: FontWeight.w400,
                           ),
                         ),
-                        const SizedBox(
-                          height: 20.0,
-                        ),
-                        TextField(
-                          keyboardType: TextInputType.emailAddress,
-                          controller: _emailController,
-                          decoration: InputDecoration(
-                            filled: true,
-                            fillColor: const Color(0xfff0e3e2),
-                            hintText: 'Email',
-                            prefixIcon: Icon(
-                              Icons.mail,
-                              color: Colors.grey[600],
-                            ),
-                            border: OutlineInputBorder(
-                              borderSide: BorderSide.none,
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 10.0,
-                        ),
-                        TextField(
-                          obscureText: _hidePassword,
-                          controller: _passwordController,
-                          decoration: InputDecoration(
-                            filled: true,
-                            fillColor: const Color(0xfff0e3e2),
-                            hintText: 'Password',
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                _hidePassword
-                                    ? FluentIcons.eye_off_24_regular
-                                    : FluentIcons.eye_24_regular,
-                                color: Colors.grey[600],
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _hidePassword = !_hidePassword;
-                                });
-                              },
-                            ),
-                            prefixIcon: Icon(
-                              Icons.lock,
-                              color: Colors.grey[600],
-                            ),
-                            border: OutlineInputBorder(
-                              borderSide: BorderSide.none,
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
-                          ),
-                        ),
+                        const SizedBox(height: 20.0),
+                        TextFieldEmail(controller: _emailController),
+                        const SizedBox(height: 10.0),
+                        TextFieldPassword(controller: _passwordController),
                         const SizedBox(height: 10.0),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.end,

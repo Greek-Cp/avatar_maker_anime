@@ -1,11 +1,11 @@
 import 'dart:convert';
 
 import 'package:avatar_maker/component/button.dart';
+import 'package:avatar_maker/component/text_field.dart';
 import 'package:avatar_maker/component/toast.dart';
 import 'package:avatar_maker/page/auth/login_page.dart';
 import 'package:avatar_maker/service/authentication.dart';
 import 'package:avatar_maker/util/color_app.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -26,7 +26,6 @@ class _RegisterPageState extends State<RegisterPage> {
   final _passwordController = TextEditingController();
 
   bool _isLoading = false;
-  bool _hidePassword = false;
 
   Future<void> _register() async {
     FocusScope.of(context).unfocus();
@@ -127,73 +126,11 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                         ),
                         const SizedBox(height: 20.0),
-                        TextField(
-                          controller: _usernameController,
-                          decoration: InputDecoration(
-                            filled: true,
-                            fillColor: const Color(0xfff0e3e2),
-                            hintText: 'Username',
-                            prefixIcon: Icon(
-                              FluentIcons.person_24_filled,
-                              color: Colors.grey[600],
-                            ),
-                            border: OutlineInputBorder(
-                              borderSide: BorderSide.none,
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 10.0,
-                        ),
-                        TextField(
-                          keyboardType: TextInputType.emailAddress,
-                          controller: _emailController,
-                          decoration: InputDecoration(
-                            filled: true,
-                            fillColor: const Color(0xfff0e3e2),
-                            hintText: 'Email',
-                            prefixIcon: Icon(
-                              Icons.mail,
-                              color: Colors.grey[600],
-                            ),
-                            border: OutlineInputBorder(
-                              borderSide: BorderSide.none,
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
-                          ),
-                        ),
+                        TextFieldUsername(controller: _usernameController),
                         const SizedBox(height: 10.0),
-                        TextField(
-                          obscureText: _hidePassword,
-                          controller: _passwordController,
-                          decoration: InputDecoration(
-                            filled: true,
-                            fillColor: const Color(0xfff0e3e2),
-                            hintText: 'Password',
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                _hidePassword
-                                    ? FluentIcons.eye_off_24_regular
-                                    : FluentIcons.eye_24_regular,
-                                color: Colors.grey[600],
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _hidePassword = !_hidePassword;
-                                });
-                              },
-                            ),
-                            prefixIcon: Icon(
-                              Icons.lock,
-                              color: Colors.grey[600],
-                            ),
-                            border: OutlineInputBorder(
-                              borderSide: BorderSide.none,
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
-                          ),
-                        ),
+                        TextFieldEmail(controller: _emailController),
+                        const SizedBox(height: 10.0),
+                        TextFieldPassword(controller: _passwordController),
                         const SizedBox(height: 30.0),
                         Button(
                           text: 'Sign Up',
