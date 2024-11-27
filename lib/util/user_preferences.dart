@@ -4,24 +4,25 @@ import 'package:avatar_maker/model/user_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class UserPreferences {
-  static const _keyUser = 'user';
+  static const String _userKey = 'user_key';
 
   Future<void> saveUser(UserModel user) async {
     final prefs = await SharedPreferences.getInstance();
-    final userData = user.toJson();
-    prefs.setString(_keyUser, json.encode(userData));
+    final userJson = jsonEncode(user.toJson()); // Mengonversi UserModel ke JSON
+    await prefs.setString(_userKey, userJson);
   }
 
   Future<UserModel?> getUser() async {
     final prefs = await SharedPreferences.getInstance();
-    final userData = prefs.getString(_keyUser);
-    if (userData == null) return null;
-
-    return UserModel.fromJson(json.decode(userData));
+    final userJson = prefs.getString(_userKey);
+    if (userJson != null) {
+      return UserModel.fromJson(jsonDecode(userJson));
+    }
+    return null; // Kembalikan null jika tidak ada data user
   }
 
   Future<void> clearUser() async {
     final prefs = await SharedPreferences.getInstance();
-    prefs.remove(_keyUser);
+    await prefs.remove(_userKey); // Menghapus data user dari penyimpanan
   }
 }

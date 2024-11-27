@@ -1,9 +1,10 @@
-import 'package:avatar_maker/component/component_text.dart';
+import 'package:avatar_maker/component/typography.dart';
 import 'package:avatar_maker/page/intro/wizard_page.dart';
-import 'package:avatar_maker/page/page_base.dart';
+import 'package:avatar_maker/page/playground_page.dart';
 import 'package:avatar_maker/service/authentication.dart';
 import 'package:avatar_maker/util/color_app.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
@@ -17,22 +18,37 @@ class SplashPage extends StatefulWidget {
 }
 
 class _SplashPageState extends State<SplashPage> {
-  final authService = AuthService();
+  final AuthService authService = AuthService();
 
   @override
-  Future<void> initState() async {
+  void initState() {
     super.initState();
-    final isLoggedIn = await authService.isLoggedIn();
 
-    // Tambahkan kode untuk menunggu beberapa saat, misalnya 3 detik
-    Future.delayed(Duration(seconds: 3), () {
-      // Navigasi ke halaman berikutnya setelah waktu yang ditentukan
-      Get.to(isLoggedIn ? PageBase() : WizardPage());
+    // Cek login status setelah splash screen muncul
+    Future.delayed(Duration(seconds: 3), () async {
+      // Cek apakah user sudah login
+      bool isLoggedIn = await authService.isLoggedIn();
+
+      // Navigasi berdasarkan status login
+      if (isLoggedIn) {
+        // Jika sudah login, navigasi ke halaman utama (misalnya PlaygroundPage)
+        Get.to(() => PlaygroundPage());
+      } else {
+        // Jika belum login, navigasi ke halaman wizard (WizardPage)
+        Get.to(() => WizardPage());
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    SystemChrome.setSystemUIOverlayStyle(
+      SystemUiOverlayStyle(
+        statusBarColor: ColorApp.primaryColor,
+        systemNavigationBarColor: ColorApp.primaryColor,
+      ),
+    );
     return Scaffold(
       backgroundColor: ColorApp.primaryColor,
       body: ScreenUtilInit(
@@ -47,7 +63,7 @@ class _SplashPageState extends State<SplashPage> {
                   width: double.infinity,
                   fit: BoxFit.cover,
                 ),
-                ComponentTextPrimaryTittleBold(
+                TitleBold(
                   text: "Make Your Anime Character",
                   textAlign: TextAlign.center,
                   size: 38.sp,

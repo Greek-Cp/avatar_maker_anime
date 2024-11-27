@@ -3,13 +3,23 @@ import 'package:avatar_maker/page/auth/login_page.dart';
 import 'package:avatar_maker/page/auth/register_page.dart';
 import 'package:avatar_maker/util/color_app.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 class WizardPage extends StatelessWidget {
+  static String? routeName = "/WizardPage";
+
   const WizardPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    SystemChrome.setSystemUIOverlayStyle(
+      SystemUiOverlayStyle(
+        statusBarColor: ColorApp.primaryColor,
+        systemNavigationBarColor: ColorApp.backgroundNavigationBottomColor,
+      ),
+    );
     return Scaffold(
       body: Stack(
         children: [

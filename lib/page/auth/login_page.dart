@@ -1,15 +1,18 @@
 import 'package:avatar_maker/component/button.dart';
 import 'package:avatar_maker/page/auth/register_page.dart';
-import 'package:avatar_maker/page/page_base.dart';
+import 'package:avatar_maker/page/playground_page.dart';
 import 'package:avatar_maker/service/authentication.dart';
 import 'package:avatar_maker/util/color_app.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:sign_in_button/sign_in_button.dart';
 
 class LoginPage extends StatefulWidget {
+  static String? routeName = "/LoginPage";
+
   const LoginPage({super.key});
 
   @override
@@ -32,26 +35,36 @@ class _LoginPageState extends State<LoginPage> {
     setState(() {
       _isLoading = true;
     });
+
+    final user = await _authService.login(context, email, password);
+    if (user != null) {
+      Get.to(PlaygroundPage());
+    }
+
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   Future<void> _loginWithGoogle() async {
     FocusScope.of(context).unfocus();
-    final response = await _authService.loginWithGoogle();
-    if (response != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Login successful!")),
-      );
-      _authService.saveUserAfterLogin(response);
-      Get.to(PageBase());
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Login failed!")),
-      );
+    final user =
+        await _authService.loginWithGoogle(context); // Login dengan Google
+    if (user != null) {
+      // Jika login berhasil, arahkan ke halaman berikutnya (PlaygroundPage)
+      Get.to(PlaygroundPage());
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    SystemChrome.setSystemUIOverlayStyle(
+      SystemUiOverlayStyle(
+        statusBarColor: ColorApp.primaryColor,
+        systemNavigationBarColor: ColorApp.backgroundNavigationBottomColor,
+      ),
+    );
     return Scaffold(
       resizeToAvoidBottomInset: true,
       body: SingleChildScrollView(

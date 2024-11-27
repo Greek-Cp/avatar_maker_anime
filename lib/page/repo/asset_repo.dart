@@ -19,7 +19,7 @@ import 'package:avatar_maker/assets_generated/Part7_class7.dart';
 import 'package:avatar_maker/assets_generated/Part8_class8.dart';
 import 'package:avatar_maker/assets_generated/Part9_class9.dart';
 import 'package:avatar_maker/assets_generated/PartUpdate9.dart';
-import 'package:avatar_maker/page/maker/page_maker_character.dart';
+import 'package:avatar_maker/page/maker/create_char_page.dart';
 import 'package:get/get.dart';
 
 class AssetRepo extends GetxController {

@@ -2,6 +2,7 @@ class UserModel {
   // Informasi Pribadi
   String? uid;
   String email;
+  String password;
   String username;
   String displayName;
   String photoURL;
@@ -20,6 +21,7 @@ class UserModel {
   UserModel({
     this.uid,
     this.email = "",
+    this.password = "",
     this.username = "",
     this.displayName = "",
     this.photoURL = "",
@@ -37,6 +39,7 @@ class UserModel {
     return UserModel(
       uid: json['uid'],
       email: json['email'] ?? "",
+      password: json['password'] ?? "",
       username: json['username'] ?? "",
       displayName: json['displayName'] ?? "",
       photoURL: json['photoURL'] ?? "",
@@ -45,11 +48,11 @@ class UserModel {
           ? DateTime.parse(json['dateOfBirth'])
           : null,
       gender: json['gender'] ?? "",
-      createdAt: DateTime.parse(json['createdAt']),
+      createdAt: _parseTimestamp(json['createdAt']),
       lastLoginAt: json['lastLoginAt'] != null
-          ? DateTime.parse(json['lastLoginAt'])
+          ? _parseTimestamp(json['lastLoginAt'])
           : null,
-      updatedAt: DateTime.parse(json['updatedAt']),
+      updatedAt: _parseTimestamp(json['updatedAt']),
     );
   }
 
@@ -58,15 +61,42 @@ class UserModel {
     return {
       'uid': uid,
       'email': email,
+      'password': password,
       'username': username,
       'displayName': displayName,
       'photoURL': photoURL,
       'phoneNumber': phoneNumber,
       'dateOfBirth': dateOfBirth?.toIso8601String(),
       'gender': gender,
-      'createdAt': createdAt.toIso8601String(),
-      'lastLoginAt': lastLoginAt?.toIso8601String(),
-      'updatedAt': updatedAt.toIso8601String(),
+      'createdAt': _timestampFromDateTime(createdAt),
+      'lastLoginAt':
+          lastLoginAt != null ? _timestampFromDateTime(lastLoginAt!) : null,
+      'updatedAt': _timestampFromDateTime(updatedAt),
+    };
+  }
+
+  // Mengonversi Firebase timestamp ke DateTime
+  static DateTime _parseTimestamp(Map<String, dynamic> timestamp) {
+    int seconds = timestamp['_seconds'];
+    int nanoseconds = timestamp['_nanoseconds'];
+
+    // Mengonversi detik dan nanodetik ke DateTime
+    DateTime dateTime =
+        DateTime.fromMillisecondsSinceEpoch(seconds * 1000, isUtc: true);
+    return dateTime.add(Duration(
+        milliseconds:
+            nanoseconds ~/ 1000000)); // Menambahkan nanodetik ke DateTime
+  }
+
+  // Mengonversi DateTime ke format Firebase timestamp (_seconds dan _nanoseconds)
+  static Map<String, dynamic> _timestampFromDateTime(DateTime dateTime) {
+    int seconds =
+        dateTime.toUtc().millisecondsSinceEpoch ~/ 1000; // Mengonversi ke detik
+    int nanoseconds = (dateTime.microsecond *
+        1000); // Mengonversi microseconds ke nanoseconds
+    return {
+      '_seconds': seconds,
+      '_nanoseconds': nanoseconds,
     };
   }
 }

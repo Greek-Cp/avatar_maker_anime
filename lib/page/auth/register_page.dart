@@ -1,15 +1,19 @@
 import 'dart:convert';
 
 import 'package:avatar_maker/component/button.dart';
+import 'package:avatar_maker/component/toast.dart';
 import 'package:avatar_maker/page/auth/login_page.dart';
 import 'package:avatar_maker/service/authentication.dart';
 import 'package:avatar_maker/util/color_app.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 class RegisterPage extends StatefulWidget {
+  static String? routeName = "/RegisterPage";
+
   const RegisterPage({super.key});
 
   @override
@@ -40,14 +44,11 @@ class _RegisterPageState extends State<RegisterPage> {
 
       // Handle status code
       if (statusCode == 201) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('User registered successfully!')),
-        );
+        Toast.showSuccessToast(context, responseBody['message']);
+        Get.to(LoginPage());
       } else {
         String message = responseBody['message'] ?? 'An error occurred';
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed: $message')),
-        );
+        Toast.showErrorToast(context, message);
       }
     } catch (e) {
       // TODO: handle error
@@ -61,6 +62,13 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    SystemChrome.setSystemUIOverlayStyle(
+      SystemUiOverlayStyle(
+        statusBarColor: ColorApp.primaryColor,
+        systemNavigationBarColor: ColorApp.backgroundNavigationBottomColor,
+      ),
+    );
     return Scaffold(
       resizeToAvoidBottomInset: true,
       body: SingleChildScrollView(

@@ -1,26 +1,28 @@
-import 'package:avatar_maker/page/maker/page_maker_character.dart';
+import 'package:avatar_maker/page/auth/account_page.dart';
+import 'package:avatar_maker/page/maker/create_char_page.dart';
 import 'package:avatar_maker/page/repo/asset_repo.dart';
-import 'package:avatar_maker/page/viewcharacter/page_view_character.dart';
+import 'package:avatar_maker/page/viewcharacter/view_char_page.dart';
 import 'package:avatar_maker/util/color_app.dart';
 import 'package:flashy_tab_bar2/flashy_tab_bar2.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
-class PageBase extends StatefulWidget {
-  static String? routeName = "/PageBase";
+class PlaygroundPage extends StatefulWidget {
+  static String? routeName = "/PlaygroundPage";
 
-  const PageBase({super.key});
+  const PlaygroundPage({super.key});
 
   @override
-  State<PageBase> createState() => _PageBaseState();
+  State<PlaygroundPage> createState() => _PlaygroundPageState();
 }
 
-class _PageBaseState extends State<PageBase> {
+class _PlaygroundPageState extends State<PlaygroundPage> {
   List<Widget> listPage = [
-    SafeArea(child: PageMakerCharacter()),
-    SafeArea(child: PageViewCharacter()),
-    SafeArea(child: PageViewCharacter()),
+    SafeArea(child: CreateCharacterPage()),
+    SafeArea(child: ViewCharacterPage()),
+    SafeArea(child: AccountPage()),
   ];
 
   int selectedPage = 0;
@@ -34,6 +36,13 @@ class _PageBaseState extends State<PageBase> {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    SystemChrome.setSystemUIOverlayStyle(
+      SystemUiOverlayStyle(
+        statusBarColor: ColorApp.primaryColor,
+        systemNavigationBarColor: ColorApp.backgroundNavigationBottomColor,
+      ),
+    );
     return Scaffold(
       body: listPage[selectedPage],
       bottomNavigationBar: FlashyTabBar(

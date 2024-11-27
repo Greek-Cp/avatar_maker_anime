@@ -1,4 +1,4 @@
-import 'package:avatar_maker/component/component_text.dart';
+import 'package:avatar_maker/component/typography.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -11,7 +11,7 @@ class ComingSoon extends StatelessWidget {
       builder: (context, child) {
         return Scaffold(
           body: Center(
-            child: ComponentTextPrimaryTittleBold(
+            child: TitleBold(
               text: "Coming Soon...\n :)",
               colorText: Colors.black,
               size: 30,

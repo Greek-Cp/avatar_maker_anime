@@ -1,232 +1,7 @@
+import 'package:avatar_maker/component/typography.dart';
 import 'package:avatar_maker/util/color_app.dart';
-import 'package:avatar_maker/util/size_app.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-
-import 'package:avatar_maker/component/component_text.dart';
-
-class ComponentButtonPrimary extends StatelessWidget {
-  String? buttonName;
-  Function? func;
-  Color? colorButton = ColorApp.primaryColor;
-  double? sizeTextButton = SizeApp.sizeTextDescription;
-  String? routeName;
-
-  ComponentButtonPrimary(
-    this.buttonName,
-    this.func, {
-    super.key,
-    this.colorButton,
-    this.sizeTextButton,
-    this.routeName,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return _button(context, func, buttonName);
-  }
-
-  Widget _button(BuildContext context, Function? function, String? buttonName) {
-    return ElevatedButton(
-      onPressed: () {
-        Navigator.of(context).pushNamed(routeName.toString());
-      },
-      style: ElevatedButton.styleFrom(
-        backgroundColor: ColorApp.primaryColor,
-        minimumSize: Size.fromHeight(55.h),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20.r),
-        ),
-      ),
-      child: ComponentTextPrimaryTittleBold(
-        text: buttonName,
-        size: sizeTextButton,
-      ),
-    );
-  }
-}
-
-class ComponentButtonChooseBirthDayPrimary extends StatelessWidget {
-  String? buttonName;
-  Function? func;
-  Color? colorButton = ColorApp.primaryColor;
-  double? sizeTextButton = SizeApp.sizeTextDescription;
-  String? routeName;
-
-  ComponentButtonChooseBirthDayPrimary(
-    this.buttonName,
-    this.func, {
-    super.key,
-    this.colorButton,
-    this.sizeTextButton,
-    this.routeName,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return _button(context, func, buttonName);
-  }
-
-  Widget _button(BuildContext context, Function? function, String? buttonName) {
-    return ElevatedButton(
-      onPressed: () {
-        Navigator.of(context).pushNamed(routeName.toString());
-      },
-      style: ElevatedButton.styleFrom(
-        backgroundColor: ColorApp.primaryColor,
-        minimumSize: Size.fromHeight(55.h),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20.r),
-        ),
-      ),
-      child: ComponentTextPrimaryTittleBold(
-        text: buttonName,
-        size: sizeTextButton,
-      ),
-    );
-  }
-}
-
-class ComponentButtonChoosePhotoProfile extends StatelessWidget {
-  String? buttonName;
-  Function? func;
-  Color? colorButton = ColorApp.secondaryButtonColor;
-  double? sizeTextButton = SizeApp.sizeTextDescription;
-  String? routeName;
-  IconData? iconData;
-
-  ComponentButtonChoosePhotoProfile(
-    this.buttonName,
-    this.func, {
-    super.key,
-    this.colorButton,
-    this.sizeTextButton,
-    this.routeName,
-    this.iconData,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return _button(context, func, buttonName, iconData);
-  }
-
-  Widget _button(
-    BuildContext context,
-    Function? function,
-    String? buttonName,
-    IconData? prefixIcon,
-  ) {
-    return ElevatedButton(
-      onPressed: () {
-        Navigator.of(context).pushNamed(routeName.toString());
-      },
-      style: ElevatedButton.styleFrom(
-        backgroundColor: colorButton,
-        minimumSize: Size.fromHeight(55.h),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20.r),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          Icon(
-            prefixIcon,
-            color: ColorApp.primaryColor,
-          ),
-          SizedBox(width: 10.0),
-          ComponentTextPrimaryTittleBold(
-            text: buttonName,
-            size: sizeTextButton,
-            colorText: ColorApp.primaryColor,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class ComponentButtonPrimaryWithFunction extends StatelessWidget {
-  String? buttonName;
-  Function? func;
-  Color? colorButton = ColorApp.primaryColor;
-  double? sizeTextButton = SizeApp.sizeTextDescription;
-  String? routeName;
-
-  ComponentButtonPrimaryWithFunction(
-    this.buttonName,
-    this.func, {
-    super.key,
-    this.colorButton,
-    this.sizeTextButton,
-    this.routeName,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return _button(context, func, buttonName);
-  }
-
-  Widget _button(BuildContext context, Function? function, String? buttonName) {
-    return ElevatedButton(
-      onPressed: () {
-        func!();
-      },
-      style: ElevatedButton.styleFrom(
-        backgroundColor: ColorApp.primaryColor,
-        minimumSize: Size.fromHeight(55.h),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20.r),
-        ),
-      ),
-      child: ComponentTextPrimaryTittleBold(
-        text: buttonName,
-        size: sizeTextButton,
-      ),
-    );
-  }
-}
-
-class ComponentButtonSecondary extends StatelessWidget {
-  String? buttonName;
-  Function? func;
-  Color? colorButton = ColorApp.primaryColor;
-  double? sizeTextButton = SizeApp.sizeTextDescription;
-  String? routeName;
-
-  ComponentButtonSecondary(
-    this.buttonName,
-    this.func, {
-    super.key,
-    this.colorButton,
-    this.sizeTextButton,
-    this.routeName,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return _button(context, func, buttonName);
-  }
-
-  Widget _button(BuildContext context, Function? function, String? buttonName) {
-    return ElevatedButton(
-      onPressed: () => Navigator.of(context).pushNamed(routeName.toString()),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.white,
-        minimumSize: Size.fromHeight(55.h),
-        side: BorderSide(color: Colors.grey, width: 1),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20.r),
-        ),
-      ),
-      child: ComponentTextPrimaryTittleBold(
-        text: buttonName,
-        size: sizeTextButton,
-        colorText: ColorApp.primaryColor,
-      ),
-    );
-  }
-}
 
 class GradientButtonWithCustomIconAndFunction extends StatefulWidget {
   final Icon? icon;
@@ -364,21 +139,27 @@ class _GradientButtonWithCustomImageAndFunctionState
   }
 }
 
-class GradientCustomWidgetText extends StatelessWidget {
-  String? assetImage;
-  Function? func;
+class GradientCustomWidgetText extends StatefulWidget {
+  final String? assetImage;
+  final Function? func;
 
-  GradientCustomWidgetText(
+  const GradientCustomWidgetText(
     this.assetImage,
     this.func, {
     super.key,
   });
 
   @override
+  State<GradientCustomWidgetText> createState() =>
+      _GradientCustomWidgetTextState();
+}
+
+class _GradientCustomWidgetTextState extends State<GradientCustomWidgetText> {
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        func!();
+        widget.func!();
       },
       child: Padding(
         padding: EdgeInsets.all(10.0.h),
@@ -402,8 +183,8 @@ class GradientCustomWidgetText extends StatelessWidget {
             ),
             child: Padding(
               padding: EdgeInsets.all(10.0.h),
-              child: ComponentTextPrimaryDescriptionBold(
-                text: "$assetImage",
+              child: DescriptionBold(
+                text: "$widget.assetImage",
                 colorText: Colors.white,
                 size: 15.sp,
               ),

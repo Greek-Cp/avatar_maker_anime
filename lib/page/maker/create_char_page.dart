@@ -56,15 +56,6 @@ class PinkDialog extends StatelessWidget {
   }
 }
 
-class PageMakerCharacter extends StatefulWidget {
-  static String? routeName = "/PageMakerCharacter";
-
-  const PageMakerCharacter({super.key});
-
-  @override
-  State<PageMakerCharacter> createState() => _PageMakerCharacterState();
-}
-
 class ItemMaker {
   String? assetParent;
   bool statusSelected = false;
@@ -72,7 +63,16 @@ class ItemMaker {
   ItemMaker(this.assetParent, this.listItem);
 }
 
-class _PageMakerCharacterState extends State<PageMakerCharacter> {
+class CreateCharacterPage extends StatefulWidget {
+  static String? routeName = "/CreateCharacterPage";
+
+  const CreateCharacterPage({super.key});
+
+  @override
+  State<CreateCharacterPage> createState() => _CreateCharacterPageState();
+}
+
+class _CreateCharacterPageState extends State<CreateCharacterPage> {
   int partSelected = 0;
   int itemSelected = 0;
   List<Widget> listImageLayer = [];
@@ -81,6 +81,7 @@ class _PageMakerCharacterState extends State<PageMakerCharacter> {
 
   final repositoryAsset = Get.put(AssetRepo());
   List<ItemMaker>? listItemMaker;
+
   @override
   void initState() {
     listItemMaker = repositoryAsset.listItemMaker;
@@ -247,7 +248,6 @@ class _PageMakerCharacterState extends State<PageMakerCharacter> {
           await image.toByteData(format: ui.ImageByteFormat.png);
       return byteData!.buffer.asUint8List();
     } catch (e) {
-      print(e);
       return Uint8List(0);
     }
   }
@@ -257,9 +257,9 @@ class _PageMakerCharacterState extends State<PageMakerCharacter> {
     // Save the image to device storage
     final result = await ImageGallerySaver.saveImage(imageBytes);
     if (result['isSuccess']) {
-      print('Image saved successfully!');
+      // print('Image saved successfully!');
     } else {
-      print('Failed to save image.');
+      // print('Failed to save image.');
     }
   }
 
@@ -268,6 +268,13 @@ class _PageMakerCharacterState extends State<PageMakerCharacter> {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    SystemChrome.setSystemUIOverlayStyle(
+      SystemUiOverlayStyle(
+        statusBarColor: ColorApp.primaryColor,
+        systemNavigationBarColor: ColorApp.backgroundNavigationBottomColor,
+      ),
+    );
     return Scaffold(
       body: ScreenUtilInit(
         builder: (context, child) {
@@ -362,14 +369,14 @@ class _PageMakerCharacterState extends State<PageMakerCharacter> {
                               for (int index = 0;
                                   index < listImageLayer.length;
                                   index++) {
-                                // Pastikan `listItemMaker` dan elemen di dalamnya tidak null
+                                // Pastikan `listItemMaker` dan element di dalamnya tidak null
                                 if (listItemMaker != null &&
                                     listItemMaker![index].listItem != null) {
-                                  // Ambil indeks acak dari `listItem`
+                                  // Ambil index acak dari `listItem`
                                   int tnd = Random().nextInt(
                                       listItemMaker![index].listItem!.length);
 
-                                  // Perbarui elemen `listImageLayer` dengan gambar baru
+                                  // Perbarui element `listImageLayer` dengan gambar baru
                                   listImageLayer[index] = Image.asset(
                                     listItemMaker![index].listItem![tnd],
                                   );
@@ -379,9 +386,6 @@ class _PageMakerCharacterState extends State<PageMakerCharacter> {
                                       listItemMaker![index]
                                           .listItem![tnd]
                                           .toString();
-                                } else {
-                                  print(
-                                      "Error: listItemMaker atau elemen listItem-nya null.");
                                 }
                               }
                             },

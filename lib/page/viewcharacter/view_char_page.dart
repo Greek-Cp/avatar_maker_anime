@@ -1,18 +1,24 @@
 import 'package:avatar_maker/component/button.dart';
 import 'package:avatar_maker/controller/avatar_controller.dart';
-import 'package:avatar_maker/page/maker/page_maker_character.dart';
+import 'package:avatar_maker/page/maker/create_char_page.dart';
 import 'package:avatar_maker/page/repo/asset_repo.dart';
+import 'package:avatar_maker/util/color_app.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-class PageViewCharacter extends StatefulWidget {
+class ViewCharacterPage extends StatefulWidget {
+  static String? routeName = "/ViewCharacterPage";
+
+  const ViewCharacterPage({super.key});
+
   @override
-  State<PageViewCharacter> createState() => _PageViewCharacterState();
+  State<ViewCharacterPage> createState() => _ViewCharacterPageState();
 }
 
-class _PageViewCharacterState extends State<PageViewCharacter> {
+class _ViewCharacterPageState extends State<ViewCharacterPage> {
   final repositoryAsset = Get.put(AssetRepo());
   List<ItemMaker> listItemMaker = [];
 
@@ -27,10 +33,14 @@ class _PageViewCharacterState extends State<PageViewCharacter> {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    SystemChrome.setSystemUIOverlayStyle(
+      SystemUiOverlayStyle(
+        statusBarColor: ColorApp.primaryColor,
+        systemNavigationBarColor: ColorApp.backgroundNavigationBottomColor,
+      ),
+    );
     List<List<String>> listLayer = _saveAvatarController.listAvatar;
-    for (var element in listLayer) {
-      print(element);
-    }
     return Scaffold(
       body: ScreenUtilInit(
         builder: (context, child) {
