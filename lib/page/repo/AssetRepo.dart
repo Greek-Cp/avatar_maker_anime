@@ -68,3 +68,10 @@ class AssetRepo extends GetxController {
     print("Update Succes");
   }
 }
+
+class ItemMaker {
+  String? assetParent;
+  bool statusSelected = false;
+  List<String>? listItem;
+  ItemMaker(this.assetParent, this.listItem);
+}

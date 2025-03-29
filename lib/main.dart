@@ -1,3 +1,4 @@
+import 'package:avatar_maker/controller/AvatarController.dart';
 import 'package:avatar_maker/page/PageBase.dart';
 import 'package:avatar_maker/page/intro/PageIntroGame.dart';
 import 'package:avatar_maker/page/testplay.dart';
@@ -30,12 +31,13 @@ void requestPermissions() async {
 
 class MainApp extends StatelessWidget {
   const MainApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack);
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle());
     requestPermissions();
+    final saveController = Get.put(SaveAvatarController());
+    final avatarController = Get.put(AvatarController());
 
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
