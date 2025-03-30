@@ -1,4 +1,7 @@
 import 'dart:math';
+import 'dart:math' as math;
+import 'dart:ui';
+
 import 'package:avatar_maker/component/ComponentButton.dart';
 import 'package:avatar_maker/controller/AvatarController.dart';
 import 'package:avatar_maker/page/repo/AssetRepo.dart';
@@ -316,253 +319,492 @@ class PageMakerCharacter extends StatelessWidget {
   final PageMakerCharacterController controller =
       Get.put(PageMakerCharacterController());
 
+  final RxBool isMenuOpen = false.obs;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: controller.backgroundColor,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        title: Obx(() => Text(
-              controller.isEditing.value ? "Edit Avatar" : "Create Avatar",
-              style: TextStyle(
-                color: controller.accentColor,
-                fontSize: 20.sp,
-                fontWeight: FontWeight.bold,
-              ),
-            )),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: controller.accentColor),
-          onPressed: () => Get.back(),
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.help_outline, color: controller.accentColor),
-            onPressed: () => _showHelpBottomSheet(context),
-          ),
-        ],
-      ),
-      body: ScreenUtilInit(
-        designSize: const Size(375, 812),
-        builder: (context, child) {
-          return Column(
-            children: [
-              SizedBox(height: 10.h),
-              _buildAvatarCanvas(),
-              SizedBox(height: 15.h),
-              _buildActionsRow(),
-              SizedBox(height: 10.h),
-              _buildCategorySelector(),
-              SizedBox(height: 10.h),
-              _buildItemGrid(),
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFFDAD7FF),
+              Color(0xFFFFE0F3),
             ],
-          );
-        },
+          ),
+        ),
+        child: SafeArea(
+          child: ScreenUtilInit(
+            designSize: const Size(375, 812),
+            builder: (context, child) {
+              return Column(
+                children: [
+                  _buildAppBar(),
+                  Expanded(
+                    child: _buildMainContent(),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildAvatarCanvas() {
+  Widget _buildAppBar() {
     return Container(
-      width: 280.w,
-      height: 280.w,
-      decoration: BoxDecoration(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          _buildGlassButton(
+            onTap: () => Get.back(),
+            child: Icon(Icons.arrow_back_ios_rounded,
+                color: Colors.white, size: 18.sp),
+            width: 40.w,
+            height: 40.w,
+          ),
+          Text(
+            "Create Your Avatar",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 22.sp,
+              fontWeight: FontWeight.bold,
+              shadows: [
+                Shadow(
+                  color: Colors.purple.withOpacity(0.3),
+                  offset: Offset(1, 1),
+                  blurRadius: 2,
+                ),
+              ],
+            ),
+          ),
+          _buildGlassButton(
+            onTap: () => _showHelpDialog(Get.context!),
+            child: Icon(Icons.help_outline_rounded,
+                color: Colors.white, size: 18.sp),
+            width: 40.w,
+            height: 40.w,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMainContent() {
+    return Column(
+      children: [
+        // Character Preview Section - Larger portion
+        Expanded(
+          flex: 6, // Increased size
+          child: _buildCharacterPreview(),
+        ),
+        // Customization Area
+        Expanded(
+          flex: 5,
+          child: _buildCustomizationArea(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCharacterPreview() {
+    return Container(
+      width: double.infinity,
+      child: Stack(
+        children: [
+          // Character and Background - Positioned higher but still touching bottom
+          Positioned.fill(
+            bottom: -20.h, // Shift character up while keeping it attached
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                // Larger character
+                _buildCharacterWithBackground(),
+              ],
+            ),
+          ),
+
+          // Menu Button (3 dots)
+          Positioned(
+            top: 10.h,
+            right: 16.w,
+            child: _buildMenuButton(),
+          ),
+
+          // Action menu - only visible when menu is open
+          Obx(() => isMenuOpen.value
+              ? Positioned(
+                  top: 70.h,
+                  right: 16.w,
+                  child: _buildActionMenu(),
+                )
+              : SizedBox.shrink()),
+
+          // Camera button
+          Positioned(
+            bottom: 16.h,
+            left: 16.w,
+            child: _buildGlassButton(
+              onTap: () => controller.saveOrUpdateAvatar(),
+              width: 56.w,
+              height: 56.w,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFFFF89B3).withOpacity(0.8),
+                  Color(0xFFFF6CAB).withOpacity(0.6),
+                ],
+              ),
+              child: Obx(
+                () => controller.isLoading.value
+                    ? SizedBox(
+                        width: 24.w,
+                        height: 24.w,
+                        child: CircularProgressIndicator(
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
+                          strokeWidth: 2.5,
+                        ),
+                      )
+                    : Icon(
+                        Icons.camera_alt_rounded,
+                        color: Colors.white,
+                        size: 24.w,
+                      ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMenuButton() {
+    return _buildGlassButton(
+      onTap: () {
+        isMenuOpen.value = !isMenuOpen.value;
+        HapticFeedback.lightImpact();
+      },
+      width: 45.w,
+      height: 45.w,
+      child: Icon(
+        Icons.more_vert,
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20.r),
+        size: 24.sp,
+      ),
+    );
+  }
+
+  Widget _buildActionMenu() {
+    return Container(
+      width: 65.w,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16.r),
+        color: Colors.white.withOpacity(0.5),
         boxShadow: [
           BoxShadow(
-            color: controller.primaryColor.withOpacity(0.3),
-            blurRadius: 15,
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            spreadRadius: 0,
+            offset: Offset(0, 5),
+          ),
+        ],
+        border: Border.all(
+          color: Colors.white.withOpacity(0.5),
+          width: 1.5,
+        ),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16.r),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildMenuOption(
+                icon: Icons.layers,
+                label: "Layers",
+                color: Color(0xFF84CAFF),
+                onTap: () {
+                  isMenuOpen.value = false;
+                  _showLayersBottomSheet(Get.context!);
+                },
+              ),
+              Divider(height: 1, color: Colors.white.withOpacity(0.3)),
+              _buildMenuOption(
+                icon: Icons.refresh,
+                label: "Random",
+                color: Color(0xFFB0A6FF),
+                onTap: () {
+                  isMenuOpen.value = false;
+                  controller.randomizeAvatar();
+                },
+              ),
+              Divider(height: 1, color: Colors.white.withOpacity(0.3)),
+              _buildMenuOption(
+                icon: Icons.cleaning_services_outlined,
+                label: "Clear",
+                color: Color(0xFFFF89B3),
+                onTap: () {
+                  isMenuOpen.value = false;
+                  controller.clearAvatar();
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMenuOption({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required Function() onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 8.w),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              color: color,
+              size: 24.sp,
+            ),
+            SizedBox(height: 6.h),
+            Text(
+              label,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 10.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCharacterWithBackground() {
+    return Container(
+      width: 280.w, // Larger container for character
+      height: 280.w,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: RadialGradient(
+          colors: [
+            Color(0xFFB0A6FF).withOpacity(0.8),
+            Color(0xFF9387FF).withOpacity(0.5),
+          ],
+          stops: [0.4, 1.0],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0xFF9387FF).withOpacity(0.3),
+            blurRadius: 20,
+            spreadRadius: 1,
             offset: Offset(0, 5),
           ),
         ],
       ),
       child: Stack(
+        alignment: Alignment.center,
         children: [
-          Center(
+          // Inner circle
+          Container(
+            width: 220.w,
+            height: 220.w,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Color(0xFFB5C4FF).withOpacity(0.3),
+            ),
+          ),
+
+          // Reflection
+          Positioned(
+            top: 50.h,
+            child: Container(
+              width: 200.w,
+              height: 100.h,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.white.withOpacity(0.4),
+                    Colors.white.withOpacity(0.0),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // Character layers - Positioned to align at bottom
+          Positioned.fill(
             child: RepaintBoundary(
               key: controller.globalKey,
-              child: Obx(() => Stack(
-                    alignment: Alignment.center,
-                    children: controller.listImageLayer
-                        .map((widget) => widget)
-                        .toList(),
-                  )),
+              child: Stack(
+                alignment: Alignment.bottomCenter,
+                children: _buildLayersWithAnimation(),
+              ),
             ),
           ),
-          Positioned(
-            right: 10,
-            bottom: 10,
-            child: Obx(() => _buildActionButton(
-                  icon: "assets/ui_icon/ic_camera.png",
-                  onTap: () => controller.saveOrUpdateAvatar(),
-                  backgroundColor: controller.accentColor,
-                  isLoading: controller.isLoading.value,
-                )),
-          ),
-          Obx(() {
-            if (controller.isEditing.value) {
-              return Positioned(
-                left: 10,
-                top: 10,
-                child: Container(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-                  decoration: BoxDecoration(
-                    color: controller.accentColor.withOpacity(0.8),
-                    borderRadius: BorderRadius.circular(15.r),
-                  ),
-                  child: Text(
-                    "Editing Avatar ${(controller.editingIndex.value + 1)}",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              );
-            }
-            return SizedBox.shrink();
-          }),
+
+          // Sparkles
+          ..._buildSparkles(),
         ],
       ),
     );
   }
 
-  Widget _buildActionButton({
-    required String icon,
-    required Function() onTap,
-    required Color backgroundColor,
-    bool isLoading = false,
-  }) {
-    return InkWell(
-      onTap: isLoading ? null : onTap,
-      borderRadius: BorderRadius.circular(15.r),
+  List<Widget> _buildLayersWithAnimation() {
+    return List.generate(controller.listImageLayer.length, (index) {
+      return Obx(() {
+        final itemKey = '${controller.listAvatarLayerString[index]}';
+        return AnimatedSwitcher(
+          duration: Duration(milliseconds: 500),
+          transitionBuilder: (Widget child, Animation<double> animation) {
+            return SlideTransition(
+              position: Tween<Offset>(
+                begin: Offset(0.3, 0.0),
+                end: Offset.zero,
+              ).animate(CurvedAnimation(
+                parent: animation,
+                curve: Curves.easeOutQuart,
+              )),
+              child: FadeTransition(
+                opacity: animation,
+                child: child,
+              ),
+            );
+          },
+          child: Container(
+            key: ValueKey<String>(itemKey),
+            child: controller.listImageLayer[index],
+          ),
+        );
+      });
+    });
+  }
+
+  List<Widget> _buildSparkles() {
+    final random = math.Random(42);
+    return List.generate(6, (index) {
+      final size = 4.0 + random.nextDouble() * 4.0;
+      final angle = index * (math.pi * 2 / 6);
+      final radius = 120.0 + random.nextDouble() * 20.0;
+      final x = math.cos(angle) * radius;
+      final y = math.sin(angle) * radius;
+
+      return Positioned(
+        left: 140.w + x,
+        top: 120.w + y,
+        child: TweenAnimationBuilder(
+          tween: Tween<double>(begin: 0.5, end: 1.0),
+          duration: Duration(milliseconds: 1000 + index * 200),
+          builder: (context, double value, child) {
+            final opacity = math.sin((value + index * 0.2) * math.pi).abs();
+            // Ensure opacity is between 0.0 and 1.0
+            final safeOpacity = opacity.clamp(0.0, 1.0);
+            return Opacity(
+              opacity: safeOpacity,
+              child: Container(
+                width: size.w,
+                height: size.w,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.white,
+                      blurRadius: 5,
+                      spreadRadius: 1,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      );
+    });
+  }
+
+  Widget _buildCustomizationArea() {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(30.r),
+          topRight: Radius.circular(30.r),
+        ),
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Colors.white.withOpacity(0.6),
+            Colors.white.withOpacity(0.4),
+          ],
+        ),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.5),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            spreadRadius: 0,
+            offset: Offset(0, -2),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(30.r),
+          topRight: Radius.circular(30.r),
+        ),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+          child: Container(
+            color: Colors.white.withOpacity(0.1),
+            child: Column(
+              children: [
+                _buildDragHandle(),
+                _buildCategorySelector(),
+                Expanded(
+                  child: _buildItemsGrid(),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDragHandle() {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 10.h),
       child: Container(
         width: 40.w,
-        height: 40.w,
+        height: 4.h,
         decoration: BoxDecoration(
-          color: backgroundColor,
-          borderRadius: BorderRadius.circular(15.r),
-          boxShadow: [
-            BoxShadow(
-              color: backgroundColor.withOpacity(0.3),
-              blurRadius: 8,
-              offset: Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Center(
-          child: isLoading
-              ? SizedBox(
-                  width: 24.w,
-                  height: 24.w,
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    strokeWidth: 2.w,
-                  ),
-                )
-              : Image.asset(
-                  icon,
-                  width: 20.w,
-                  height: 20.w,
-                  color: Colors.white,
-                ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildActionsRow() {
-    return Container(
-      height: 60.h,
-      margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          Expanded(
-            child: _buildActionCard(
-              title: "Layers",
-              icon: "assets/ui_icon/ic_layer.png",
-              onTap: () => _showLayersBottomSheet(Get.context!),
-              color: controller.secondaryColor,
-            ),
-          ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: _buildActionCard(
-              title: "Clear",
-              icon: "assets/ui_icon/ic_erase.png",
-              onTap: () => controller.clearAvatar(),
-              color: controller.primaryColor,
-            ),
-          ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: _buildActionCard(
-              title: "Random",
-              icon: "assets/ui_icon/ic_random.png",
-              onTap: () => controller.randomizeAvatar(),
-              color: controller.accentColor,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActionCard({
-    required String title,
-    required String icon,
-    required Function() onTap,
-    required Color color,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(15.r),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(15.r),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.15),
-              blurRadius: 8,
-              offset: Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 30.w,
-              height: 30.w,
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.2),
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Image.asset(
-                  icon,
-                  width: 15.w,
-                  height: 15.w,
-                  color: color,
-                ),
-              ),
-            ),
-            SizedBox(height: 5.h),
-            Text(
-              title,
-              style: TextStyle(
-                color: controller.textColor,
-                fontSize: 12.sp,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
+          color: Colors.white.withOpacity(0.7),
+          borderRadius: BorderRadius.circular(10.r),
         ),
       ),
     );
@@ -570,7 +812,7 @@ class PageMakerCharacter extends StatelessWidget {
 
   Widget _buildCategorySelector() {
     return Container(
-      height: 90.h,
+      height: 70.h,
       child: AnimationLimiter(
         child: GetBuilder<PageMakerCharacterController>(
           id: 'category_selector',
@@ -579,74 +821,89 @@ class PageMakerCharacter extends StatelessWidget {
             return ListView.builder(
               scrollDirection: Axis.horizontal,
               physics: BouncingScrollPhysics(),
-              padding: EdgeInsets.symmetric(horizontal: 15.w),
+              padding: EdgeInsets.symmetric(horizontal: 12.w),
               itemCount: listItemMaker.length,
               itemBuilder: (context, index) {
-                // Gunakan GetX value stream untuk memastikan update reaktif
-                return Obx(() => AnimationConfiguration.staggeredList(
-                      position: index,
-                      duration: Duration(milliseconds: 300),
-                      child: SlideAnimation(
-                        horizontalOffset: 50.0,
-                        child: FadeInAnimation(
+                return AnimationConfiguration.staggeredList(
+                  position: index,
+                  duration: Duration(milliseconds: 400),
+                  child: SlideAnimation(
+                    horizontalOffset: 30.0,
+                    child: FadeInAnimation(
+                      child: Obx(() {
+                        final isSelected =
+                            controller.partSelected.value == index;
+                        return Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 5.w),
                           child: GestureDetector(
                             onTap: () {
                               controller.changePartSelected(index);
-                              // Tambahkan update() untuk memaksa refresh UI
                               controller
                                   .update(['category_selector', 'item_grid']);
                             },
-                            child: Container(
-                              width: 70.w,
-                              margin: EdgeInsets.symmetric(
-                                  horizontal: 5.w, vertical: 10.h),
+                            child: AnimatedContainer(
+                              duration: Duration(milliseconds: 300),
+                              width: 80.w,
                               decoration: BoxDecoration(
-                                color: controller.partSelected.value == index
-                                    ? controller.primaryColor
-                                    : Colors.white,
-                                borderRadius: BorderRadius.circular(15.r),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withOpacity(0.15),
-                                    blurRadius: 8,
-                                    offset: Offset(0, 2),
-                                  ),
-                                ],
+                                borderRadius: BorderRadius.circular(14.r),
+                                color: isSelected
+                                    ? Color(0xFFB5A6FF)
+                                    : Colors.white.withOpacity(0.4),
+                                border: Border.all(
+                                  color: Colors.white
+                                      .withOpacity(isSelected ? 0.7 : 0.4),
+                                  width: 1.5,
+                                ),
                               ),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Container(
-                                    width: 40.w,
-                                    height: 40.w,
-                                    child: Stack(
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(14.r),
+                                child: BackdropFilter(
+                                  filter:
+                                      ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                                  child: Container(
+                                    color: Colors.transparent,
+                                    padding:
+                                        EdgeInsets.symmetric(horizontal: 8.w),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
-                                        Image.asset(Part15_class15.asset_0),
-                                        Image.asset(listItemMaker[index]
-                                            .listItem![0]
-                                            .toString()),
+                                        Container(
+                                          width: 30.w,
+                                          height: 30.w,
+                                          child: Stack(
+                                            alignment: Alignment.center,
+                                            children: [
+                                              Image.asset(
+                                                  Part15_class15.asset_0),
+                                              Image.asset(listItemMaker[index]
+                                                  .listItem![0]),
+                                            ],
+                                          ),
+                                        ),
+                                        SizedBox(height: 4.h),
+                                        Text(
+                                          "Part ${index + 1}",
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 12.sp,
+                                            fontWeight: isSelected
+                                                ? FontWeight.bold
+                                                : FontWeight.normal,
+                                          ),
+                                        ),
                                       ],
                                     ),
                                   ),
-                                  SizedBox(height: 5.h),
-                                  Text(
-                                    "Part ${index + 1}",
-                                    style: TextStyle(
-                                      color:
-                                          controller.partSelected.value == index
-                                              ? Colors.white
-                                              : controller.textColor,
-                                      fontSize: 10.sp,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ],
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      ),
-                    ));
+                        );
+                      }),
+                    ),
+                  ),
+                );
               },
             );
           },
@@ -655,101 +912,145 @@ class PageMakerCharacter extends StatelessWidget {
     );
   }
 
-  Widget _buildItemGrid() {
-    return Expanded(
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(30.r),
-            topRight: Radius.circular(30.r),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
-              blurRadius: 8,
-              offset: Offset(0, -3),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: 15.h),
-              child: Container(
-                width: 40.w,
-                height: 5.h,
-                decoration: BoxDecoration(
-                  color: Colors.grey.withOpacity(0.3),
-                  borderRadius: BorderRadius.circular(10.r),
-                ),
-              ),
-            ),
-            Expanded(
-              child: AnimationLimiter(
-                child: Obx(() {
-                  final listItemMaker = controller.assetRepo.listItemMaker;
-                  final selectedItem = controller.selectedItemsPerCategory[
-                          controller.partSelected.value] ??
-                      0;
+  Widget _buildItemsGrid() {
+    return AnimationLimiter(
+      child: Obx(() {
+        final listItemMaker = controller.assetRepo.listItemMaker;
+        final selectedItem = controller
+                .selectedItemsPerCategory[controller.partSelected.value] ??
+            0;
 
-                  return GridView.builder(
-                    padding: EdgeInsets.all(15.w),
-                    physics: BouncingScrollPhysics(),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 4,
-                      childAspectRatio: 1.0,
-                      crossAxisSpacing: 10.w,
-                      mainAxisSpacing: 10.w,
-                    ),
-                    itemCount: listItemMaker[controller.partSelected.value]
-                        .listItem!
-                        .length,
-                    itemBuilder: (context, index) {
-                      return AnimationConfiguration.staggeredGrid(
-                        position: index,
-                        duration: Duration(milliseconds: 300),
-                        columnCount: 4,
-                        child: ScaleAnimation(
-                          child: FadeInAnimation(
-                            child: GestureDetector(
-                              onTap: () => controller.selectItem(index),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: selectedItem == index
-                                      ? controller.primaryColor.withOpacity(0.1)
-                                      : Colors.white,
-                                  borderRadius: BorderRadius.circular(15.r),
-                                  border: Border.all(
-                                    color: selectedItem == index
-                                        ? controller.primaryColor
-                                        : Colors.grey.withOpacity(0.2),
-                                    width: selectedItem == index ? 2 : 1,
+        return GridView.builder(
+          padding: EdgeInsets.all(12.w),
+          physics: BouncingScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 4,
+            childAspectRatio: 1.0,
+            crossAxisSpacing: 8.w,
+            mainAxisSpacing: 8.w,
+          ),
+          itemCount:
+              listItemMaker[controller.partSelected.value].listItem!.length,
+          itemBuilder: (context, index) {
+            return AnimationConfiguration.staggeredGrid(
+              position: index,
+              duration: Duration(milliseconds: 400),
+              columnCount: 4,
+              child: ScaleAnimation(
+                duration: Duration(milliseconds: 300),
+                child: FadeInAnimation(
+                  duration: Duration(milliseconds: 300),
+                  child: GestureDetector(
+                    onTap: () {
+                      // Add vibration feedback on tap
+                      HapticFeedback.lightImpact();
+                      controller.selectItem(index);
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12.r),
+                        color: selectedItem == index
+                            ? Color(0xFFFF6CAB).withOpacity(0.6)
+                            : Colors.white.withOpacity(0.4),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.5),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12.r),
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                          child: Container(
+                            color: Colors.transparent,
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                Image.asset(Part15_class15.asset_0),
+                                Image.asset(
+                                    listItemMaker[controller.partSelected.value]
+                                        .listItem![index]),
+                                if (selectedItem == index)
+                                  Positioned(
+                                    top: 5.h,
+                                    right: 5.w,
+                                    child: Container(
+                                      width: 16.w,
+                                      height: 16.w,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Colors.white,
+                                      ),
+                                      child: Center(
+                                        child: Icon(
+                                          Icons.check,
+                                          color: Color(0xFFFF6CAB),
+                                          size: 12.sp,
+                                        ),
+                                      ),
+                                    ),
                                   ),
-                                ),
-                                child: Stack(
-                                  children: [
-                                    Image.asset(
-                                      Part15_class15.asset_0,
-                                    ),
-                                    Image.asset(
-                                      listItemMaker[
-                                              controller.partSelected.value]
-                                          .listItem![index],
-                                    ),
-                                  ],
-                                ),
-                              ),
+                              ],
                             ),
                           ),
                         ),
-                      );
-                    },
-                  );
-                }),
+                      ),
+                    ),
+                  ),
+                ),
               ),
+            );
+          },
+        );
+      }),
+    );
+  }
+
+  Widget _buildGlassButton({
+    required Widget child,
+    required Function()? onTap,
+    required double width,
+    required double height,
+    Gradient? gradient,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: width,
+        height: height,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16.r),
+          gradient: gradient ??
+              LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.white.withOpacity(0.5),
+                  Colors.white.withOpacity(0.3),
+                ],
+              ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 5,
+              spreadRadius: 0,
+              offset: Offset(0, 2),
             ),
           ],
+          border: Border.all(
+            color: Colors.white.withOpacity(0.5),
+            width: 1.5,
+          ),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16.r),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+            child: Container(
+              color: Colors.transparent,
+              child: Center(child: child),
+            ),
+          ),
         ),
       ),
     );
@@ -757,215 +1058,465 @@ class PageMakerCharacter extends StatelessWidget {
 
   void _showLayersBottomSheet(BuildContext context) {
     Get.bottomSheet(
-      Container(
-        height: MediaQuery.of(context).size.height * 0.7,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(30.r),
-            topRight: Radius.circular(30.r),
+      BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+        child: Container(
+          height: MediaQuery.of(context).size.height * 0.7,
+          decoration: BoxDecoration(
+            color: Colors.transparent,
           ),
-        ),
-        child: Column(
-          children: [
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: 15.h),
-              child: Container(
-                width: 40.w,
-                height: 5.h,
+          child: Stack(
+            children: [
+              // Glass background
+              Container(
                 decoration: BoxDecoration(
-                  color: Colors.grey.withOpacity(0.3),
-                  borderRadius: BorderRadius.circular(10.r),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(30.r),
+                    topRight: Radius.circular(30.r),
+                  ),
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.white.withOpacity(0.7),
+                      Colors.white.withOpacity(0.4),
+                    ],
+                  ),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.5),
+                    width: 1.5,
+                  ),
                 ),
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    "Manage Layers",
-                    style: TextStyle(
-                      color: controller.textColor,
-                      fontSize: 18.sp,
-                      fontWeight: FontWeight.bold,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(30.r),
+                    topRight: Radius.circular(30.r),
+                  ),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: Container(
+                      color: Colors.transparent,
                     ),
                   ),
-                  IconButton(
-                    onPressed: () => Get.back(),
-                    icon: Icon(Icons.close, color: controller.textColor),
+                ),
+              ),
+
+              // Content
+              Column(
+                children: [
+                  _buildDragHandle(),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20.w),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Manage Layers",
+                          style: TextStyle(
+                            color: Color(0xFF666CFF),
+                            fontSize: 20.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.close, color: Color(0xFF666CFF)),
+                          onPressed: () => Get.back(),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Avatar preview with correct positioning
+                  Container(
+                    width: 100.w,
+                    height: 100.w,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Color(0xFFB0A6FF).withOpacity(0.3),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Color(0xFF9387FF).withOpacity(0.2),
+                          blurRadius: 15,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                    child: ClipOval(
+                      child: Obx(() => Stack(
+                            alignment: Alignment
+                                .bottomCenter, // Important: Bottom alignment
+                            children: controller.listImageLayer
+                                .map((widget) => widget)
+                                .toList(),
+                          )),
+                    ),
+                  ),
+                  SizedBox(height: 20.h),
+
+                  // Divider
+                  Container(
+                    margin: EdgeInsets.symmetric(horizontal: 40.w),
+                    height: 1.h,
+                    color: Colors.white.withOpacity(0.5),
+                  ),
+                  SizedBox(height: 16.h),
+
+                  // Layers list
+                  Expanded(
+                    child: Obx(() {
+                      return ListView.builder(
+                        padding: EdgeInsets.symmetric(horizontal: 20.w),
+                        itemCount: controller.listImageLayer.length,
+                        physics: BouncingScrollPhysics(),
+                        itemBuilder: (context, index) {
+                          return AnimationConfiguration.staggeredList(
+                            position: index,
+                            duration: Duration(milliseconds: 400),
+                            child: SlideAnimation(
+                              horizontalOffset: 50.0,
+                              child: FadeInAnimation(
+                                child: Padding(
+                                  padding: EdgeInsets.only(bottom: 10.h),
+                                  child: _buildLayerTile(index),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    }),
+                  ),
+
+                  // Done button
+                  Padding(
+                    padding: EdgeInsets.all(20.w),
+                    child: _buildGlassButton(
+                      onTap: () => Get.back(),
+                      width: double.infinity,
+                      height: 50.h,
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Color(0xFF9387FF).withOpacity(0.8),
+                          Color(0xFF666CFF).withOpacity(0.6),
+                        ],
+                      ),
+                      child: Text(
+                        "Done",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),
-            ),
-            Divider(),
-            Expanded(
-              child: Obx(() {
-                return ListView.builder(
-                  padding: EdgeInsets.symmetric(horizontal: 20.w),
-                  itemCount: controller.listImageLayer.length,
-                  itemBuilder: (context, index) {
-                    return Container(
-                      margin: EdgeInsets.only(bottom: 15.h),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(15.r),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.1),
-                            blurRadius: 8,
-                            offset: Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 60.w,
-                            height: 60.w,
-                            padding: EdgeInsets.all(5.w),
-                            child: controller.listImageLayer[index],
-                          ),
-                          SizedBox(width: 10.w),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "Layer ${index + 1}",
-                                  style: TextStyle(
-                                    color: controller.textColor,
-                                    fontSize: 14.sp,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                SizedBox(height: 3.h),
-                                Text(
-                                  "Part ${index + 1} Component",
-                                  style: TextStyle(
-                                    color: Colors.grey,
-                                    fontSize: 12.sp,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          IconButton(
-                            onPressed: () {
-                              controller.clearLayer(index);
-                              Get.back();
-                            },
-                            icon: Icon(Icons.delete_outline,
-                                color: Colors.red[300]),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                );
-              }),
-            ),
-            Padding(
-              padding: EdgeInsets.all(20.w),
-              child: ElevatedButton(
-                onPressed: () => Get.back(),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: controller.primaryColor,
-                  minimumSize: Size(double.infinity, 50.h),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15.r),
-                  ),
-                ),
-                child: Text("Done"),
-              ),
-            ),
-          ],
-        ),
-      ),
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-    );
-  }
-
-  void _showHelpBottomSheet(BuildContext context) {
-    Get.bottomSheet(
-      Container(
-        padding: EdgeInsets.all(20.w),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(30.r),
-            topRight: Radius.circular(30.r),
+            ],
           ),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40.w,
-              height: 5.h,
-              decoration: BoxDecoration(
-                color: Colors.grey.withOpacity(0.3),
-                borderRadius: BorderRadius.circular(10.r),
-              ),
-            ),
-            SizedBox(height: 20.h),
-            Text(
-              "Avatar Maker Guide",
-              style: TextStyle(
-                color: controller.accentColor,
-                fontSize: 18.sp,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: 15.h),
-            _buildInfoItem(
-              icon: Icons.category,
-              title: "Select Parts",
-              description: "Choose different parts from the categories below",
-            ),
-            _buildInfoItem(
-              icon: Icons.grid_view,
-              title: "Customize Items",
-              description: "Tap on items in the grid to apply them",
-            ),
-            _buildInfoItem(
-              icon: Icons.save,
-              title: "Save Your Creation",
-              description: "Use the camera button to save your avatar",
-            ),
-            SizedBox(height: 20.h),
-          ],
-        ),
       ),
+      isScrollControlled: true,
       backgroundColor: Colors.transparent,
     );
   }
 
-  Widget _buildInfoItem({
+  Widget _buildLayerTile(int index) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16.r),
+        color: Colors.white.withOpacity(0.4),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.5),
+          width: 1.5,
+        ),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16.r),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+          child: Container(
+            color: Colors.transparent,
+            padding: EdgeInsets.all(10.w),
+            child: Row(
+              children: [
+                // Layer thumbnail - using your specified code
+                Container(
+                  width: 50.w,
+                  height: 50.w,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10.r),
+                    color: Colors.white.withOpacity(0.2),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.5),
+                      width: 1,
+                    ),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10.r),
+                    child: Stack(
+                      alignment: Alignment
+                          .bottomCenter, // Important: Bottom alignment here too
+                      children: [controller.listImageLayer[index]],
+                    ),
+                  ),
+                ),
+                SizedBox(width: 15.w),
+
+                // Layer info
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 8.w,
+                          vertical: 3.h,
+                        ),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8.r),
+                          color: Color(0xFFB0A6FF).withOpacity(0.4),
+                        ),
+                        child: Text(
+                          "Layer ${index + 1}",
+                          style: TextStyle(
+                            color: Color(0xFF666CFF),
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 5.h),
+                      Text(
+                        "Part ${index + 1} Component",
+                        style: TextStyle(
+                          color: Color(0xFF666CFF).withOpacity(0.8),
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Clear layer button
+                IconButton(
+                  onPressed: () {
+                    controller.clearLayer(index);
+                    Get.back();
+                  },
+                  icon: Icon(
+                    Icons.delete_outline_rounded,
+                    color: Color(0xFFFF6CAB),
+                    size: 22.sp,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showHelpDialog(BuildContext context) {
+    Get.bottomSheet(
+      BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+        child: Container(
+          padding: EdgeInsets.all(20.w),
+          decoration: BoxDecoration(
+            color: Colors.transparent,
+          ),
+          child: Stack(
+            children: [
+              // Glass background
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(30.r),
+                    topRight: Radius.circular(30.r),
+                  ),
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.white.withOpacity(0.7),
+                      Colors.white.withOpacity(0.4),
+                    ],
+                  ),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.5),
+                    width: 1.5,
+                  ),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(30.r),
+                    topRight: Radius.circular(30.r),
+                  ),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: Container(
+                      color: Colors.transparent,
+                    ),
+                  ),
+                ),
+              ),
+
+              // Content
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildDragHandle(),
+                  SizedBox(height: 10.h),
+
+                  // Title with icon
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(10.w),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Color(0xFFB0A6FF).withOpacity(0.4),
+                        ),
+                        child: Icon(
+                          Icons.emoji_objects_rounded,
+                          color: Color(0xFF666CFF),
+                          size: 24.sp,
+                        ),
+                      ),
+                      SizedBox(width: 10.w),
+                      Text(
+                        "How To Play",
+                        style: TextStyle(
+                          color: Color(0xFF666CFF),
+                          fontSize: 22.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 25.h),
+
+                  // Instructions
+                  AnimationLimiter(
+                    child: Column(
+                      children: AnimationConfiguration.toStaggeredList(
+                        duration: Duration(milliseconds: 600),
+                        childAnimationBuilder: (widget) => SlideAnimation(
+                          horizontalOffset: 50.0,
+                          child: FadeInAnimation(child: widget),
+                        ),
+                        children: [
+                          _buildHelpItem(
+                            icon: Icons.style_rounded,
+                            title: "Choose Category",
+                            description: "Select different parts to customize",
+                            color: Color(0xFF84CAFF),
+                          ),
+                          _buildHelpItem(
+                            icon: Icons.grid_view_rounded,
+                            title: "Select Items",
+                            description: "Tap on items to add to your avatar",
+                            color: Color(0xFFB0A6FF),
+                          ),
+                          _buildHelpItem(
+                            icon: Icons.more_vert,
+                            title: "Menu Options",
+                            description: "Tap menu for more features",
+                            color: Color(0xFFFF89B3),
+                          ),
+                          _buildHelpItem(
+                            icon: Icons.camera_alt_rounded,
+                            title: "Save Avatar",
+                            description: "Capture and save your creation",
+                            color: Color(0xFFFF6CAB),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 25.h),
+
+                  // Got it button
+                  _buildGlassButton(
+                    onTap: () => Get.back(),
+                    width: double.infinity,
+                    height: 50.h,
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Color(0xFF9387FF).withOpacity(0.8),
+                        Color(0xFF666CFF).withOpacity(0.6),
+                      ],
+                    ),
+                    child: Text(
+                      "Got it!",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+    );
+  }
+
+  Widget _buildHelpItem({
     required IconData icon,
     required String title,
     required String description,
+    required Color color,
   }) {
     return Container(
-      margin: EdgeInsets.only(bottom: 15.h),
+      margin: EdgeInsets.only(bottom: 16.h),
       child: Row(
         children: [
+          // Icon with glass effect
           Container(
-            width: 40.w,
-            height: 40.w,
+            width: 45.w,
+            height: 45.w,
             decoration: BoxDecoration(
-              color: controller.primaryColor.withOpacity(0.2),
-              shape: BoxShape.circle,
+              borderRadius: BorderRadius.circular(12.r),
+              color: color.withOpacity(0.5),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.5),
+                width: 1,
+              ),
             ),
-            child: Icon(
-              icon,
-              color: controller.accentColor,
-              size: 20.w,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12.r),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                child: Container(
+                  color: Colors.transparent,
+                  child: Center(
+                    child: Icon(
+                      icon,
+                      color: Colors.white,
+                      size: 22.sp,
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
           SizedBox(width: 15.w),
+
+          // Text content
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -973,16 +1524,16 @@ class PageMakerCharacter extends StatelessWidget {
                 Text(
                   title,
                   style: TextStyle(
-                    color: controller.textColor,
+                    color: Color(0xFF666CFF),
                     fontSize: 16.sp,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                SizedBox(height: 3.h),
+                SizedBox(height: 4.h),
                 Text(
                   description,
                   style: TextStyle(
-                    color: Colors.grey,
+                    color: Color(0xFF666CFF).withOpacity(0.7),
                     fontSize: 14.sp,
                   ),
                 ),
