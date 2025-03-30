@@ -14,6 +14,7 @@ import 'package:get/get.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 
 import '../../assets_class/Part15_class15.dart';
+import '../PageBase.dart';
 
 class AvatarController extends GetxController {
   // Avatar yang sedang ditampilkan di editor
@@ -29,25 +30,46 @@ class AvatarController extends GetxController {
     Get.to(() => PageMakerCharacter());
   }
 
-  // Memuat avatar dari SaveAvatarController untuk diedit - FIXED VERSION
+  // Memuat avatar dari SaveAvatarController untuk diedit
   void loadAvatarForEdit(int index) {
-    final saveController = Get.find<SaveAvatarController>();
-    print("Loading avatar for edit, index: $index");
+    try {
+      final saveController = Get.find<SaveAvatarController>();
+      print("Loading avatar for edit, index: $index");
 
-    if (index >= 0 && index < saveController.listAvatar.length) {
-      // First mark the avatar for editing in the SaveAvatarController
-      saveController.loadAvatarForEditing(index);
+      if (index >= 0 && index < saveController.listAvatar.length) {
+        // First mark the avatar for editing in the SaveAvatarController
+        saveController.loadAvatarForEditing(index);
 
-      // Make sure to properly remove any existing controller instance
-      if (Get.isRegistered<PageMakerCharacterController>()) {
-        Get.delete<PageMakerCharacterController>();
+        // Make sure to properly remove any existing controller instance
+        if (Get.isRegistered<PageMakerCharacterController>()) {
+          Get.delete<PageMakerCharacterController>();
+        }
+
+        // Register the controller before navigation
+        Get.put(PageMakerCharacterController());
+
+        // Get the tab controller to change the tab
+        final tabController = Get.find<AppTabController>();
+
+        // Switch to the first tab (Create tab - index 0)
+        tabController.changeTab(0);
+
+        // Navigate back to the main page if needed
+        if (Get.currentRoute != PageBase.routeName) {
+          Get.until((route) => route.settings.name == PageBase.routeName);
+        }
+
+        // Show success message
+        Get.snackbar("Avatar Loaded", "Your avatar is ready for editing",
+            backgroundColor: Color(0xFF9F6CF7).withOpacity(0.8),
+            colorText: Colors.white,
+            duration: Duration(seconds: 2));
       }
-
-      // Register the controller before navigation
-      Get.put(PageMakerCharacterController());
-
-      // Navigate to the page
-      Get.to(() => PageMakerCharacter());
+    } catch (e) {
+      print("Error in loadAvatarForEdit: $e");
+      Get.snackbar("Error", "Failed to load avatar for editing",
+          backgroundColor: Colors.red.withOpacity(0.8),
+          colorText: Colors.white);
     }
   }
 }
@@ -372,6 +394,7 @@ class _PageMakerCharacterState extends State<PageMakerCharacter>
     with SingleTickerProviderStateMixin {
   final PageMakerCharacterController controller =
       Get.find<PageMakerCharacterController>();
+  final SaveAvatarController controllerSave = Get.find<SaveAvatarController>();
 
   final RxBool isMenuOpen = false.obs;
 
@@ -701,6 +724,9 @@ class _PageMakerCharacterState extends State<PageMakerCharacter>
                 onTap: () {
                   isMenuOpen.value = false;
                   controller.clearAvatar();
+
+                  controllerSave.clearEditingState();
+                  controller.isEditing.value = false;
                 },
                 iconSize: iconSize,
                 fontSize: fontSize,

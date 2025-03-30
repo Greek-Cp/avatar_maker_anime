@@ -9,8 +9,19 @@ import 'package:get/get.dart';
 
 import '../controller/AvatarController.dart';
 
+// Import your other classes
+class AppTabController extends GetxController {
+  // Current selected tab index
+  final RxInt selectedTab = 0.obs;
+
+  // Method to change the tab
+  void changeTab(int index) {
+    selectedTab.value = index;
+  }
+}
+
 class PageBase extends StatefulWidget {
-  static String routeName = "/PageBase"; // Changed from String? to String
+  static String routeName = "/PageBase";
   @override
   State<PageBase> createState() => _PageBaseState();
 }
@@ -18,7 +29,9 @@ class PageBase extends StatefulWidget {
 class _PageBaseState extends State<PageBase> with TickerProviderStateMixin {
   List<Widget> listPage = [];
 
-  int selectedPage = 0;
+  // Use the tab controller instead of a local variable
+  final tabController = Get.put(AppTabController());
+
   final repoController = Get.put(AssetRepo());
   final saveAvatarController = Get.put(SaveAvatarController());
   final avatarController = Get.put(AvatarController());
@@ -43,9 +56,6 @@ class _PageBaseState extends State<PageBase> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-
-    // Register this state controller with GetX so it can be accessed
-    Get.put(this, tag: 'pageBaseState');
 
     repoController.updateRepo();
 
@@ -87,10 +97,6 @@ class _PageBaseState extends State<PageBase> with TickerProviderStateMixin {
     _bounceController.dispose();
     _rotationController.dispose();
     _scaleController.dispose();
-
-    // Remove the state from GetX when disposed
-    Get.delete<_PageBaseState>(tag: 'pageBaseState');
-
     super.dispose();
   }
 
@@ -108,7 +114,8 @@ class _PageBaseState extends State<PageBase> with TickerProviderStateMixin {
             width: screenSize.width,
             height: screenSize.height,
             padding: EdgeInsets.only(bottom: 90 + bottomPadding),
-            child: listPage[selectedPage],
+            // Use Obx to listen to the tab controller
+            child: Obx(() => listPage[tabController.selectedTab.value]),
           ),
 
           // Bottom navigation bar
@@ -177,34 +184,34 @@ class _PageBaseState extends State<PageBase> with TickerProviderStateMixin {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          _buildAnimatedNavItem(
-                            icon: Icons.create_rounded,
-                            label: "Create",
-                            isActive: selectedPage == 0,
-                            index: 0,
-                            color: navColors[0],
-                          ),
-                          _buildAnimatedNavItem(
-                            icon: Icons.collections_rounded,
-                            label: "Gallery",
-                            isActive: selectedPage == 1,
-                            index: 1,
-                            color: navColors[1],
-                          ),
-                          _buildAnimatedNavItem(
-                            icon: Icons.shopping_bag_rounded,
-                            label: "Shop",
-                            isActive: selectedPage == 2,
-                            index: 2,
-                            color: navColors[2],
-                          ),
-                          _buildAnimatedNavItem(
-                            icon: Icons.sports_esports_rounded,
-                            label: "Games",
-                            isActive: selectedPage == 3,
-                            index: 3,
-                            color: navColors[3],
-                          ),
+                          Obx(() => _buildAnimatedNavItem(
+                                icon: Icons.create_rounded,
+                                label: "Create",
+                                isActive: tabController.selectedTab.value == 0,
+                                index: 0,
+                                color: navColors[0],
+                              )),
+                          Obx(() => _buildAnimatedNavItem(
+                                icon: Icons.collections_rounded,
+                                label: "Gallery",
+                                isActive: tabController.selectedTab.value == 1,
+                                index: 1,
+                                color: navColors[1],
+                              )),
+                          Obx(() => _buildAnimatedNavItem(
+                                icon: Icons.shopping_bag_rounded,
+                                label: "Shop",
+                                isActive: tabController.selectedTab.value == 2,
+                                index: 2,
+                                color: navColors[2],
+                              )),
+                          Obx(() => _buildAnimatedNavItem(
+                                icon: Icons.sports_esports_rounded,
+                                label: "Games",
+                                isActive: tabController.selectedTab.value == 3,
+                                index: 3,
+                                color: navColors[3],
+                              )),
                         ],
                       ),
                     ),
@@ -283,11 +290,10 @@ class _PageBaseState extends State<PageBase> with TickerProviderStateMixin {
 
     return GestureDetector(
       onTap: () {
-        setState(() {
-          selectedPage = index;
-          _bounceController.reset();
-          _bounceController.forward();
-        });
+        // Update the tab controller
+        tabController.changeTab(index);
+        _bounceController.reset();
+        _bounceController.forward();
       },
       child: AnimatedBuilder(
         animation: Listenable.merge([_bounceController, _scaleController]),
@@ -426,32 +432,37 @@ class _PageBaseState extends State<PageBase> with TickerProviderStateMixin {
   }
 }
 
-// Custom painter for bubble background effect
+// Add BubblePainter class if it's not defined elsewhere
 class BubblePainter extends CustomPainter {
   final List<Offset> dotPositions;
   final List<Color> colors;
   final Size size;
 
-  BubblePainter(
-      {required this.dotPositions, required this.colors, required this.size});
+  BubblePainter({
+    required this.dotPositions,
+    required this.colors,
+    required this.size,
+  });
 
   @override
-  void paint(Canvas canvas, Size canvasSize) {
+  void paint(Canvas canvas, Size size) {
     for (int i = 0; i < dotPositions.length; i++) {
-      // Scale dots based on canvas size
-      final scaledX = dotPositions[i].dx * (canvasSize.width / size.width);
-      final scaledY = dotPositions[i].dy * (canvasSize.height / size.height);
-
       final paint = Paint()
         ..color = colors[i % colors.length]
         ..style = PaintingStyle.fill;
 
-      canvas.drawCircle(Offset(scaledX, scaledY), 3 + (i % 8), paint);
+      canvas.drawCircle(
+        dotPositions[i],
+        2 + (i % 3),
+        paint,
+      );
     }
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return false;
+  }
 }
 
 // Coming Soon Page with fun animated elements for kids
