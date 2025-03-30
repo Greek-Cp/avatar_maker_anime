@@ -24,6 +24,7 @@ void requestPermissions() async {
       statuses[Permission.manageExternalStorage]!.isGranted) {
     // Permissions granted, you can now access external storage
   } else {
+    ;
     // Permissions not granted, handle accordingly
   }
 }
@@ -41,11 +42,11 @@ class MainApp extends StatelessWidget {
     final makerCharacter = Get.put(PageMakerCharacterController());
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      initialRoute: PageIntroGame.routeName,
+      initialRoute: SplashScreen.routeName,
       getPages: [
-        GetPage(
-            name: PageIntroGame.routeName.toString(),
-            page: () => PageIntroGame()),
+        GetPage(name: SplashScreen.routeName, page: () => SplashScreen()),
+        GetPage(name: IntroScreen.routeName, page: () => IntroScreen()),
+        GetPage(name: PageBase.routeName, page: () => PageBase()),
         GetPage(name: PageBase.routeName.toString(), page: () => PageBase()),
         // GetPage(
         //     name: Playground.routeName.toString(), page: () => Playground()),

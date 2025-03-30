@@ -61,7 +61,7 @@ class _PageBaseState extends State<PageBase> with TickerProviderStateMixin {
 
     // Initialize pages
     listPage = [
-      SafeArea(child: PageMakerCharacter()),
+      PageMakerCharacter(),
       SafeArea(child: AvatarHistoryPage()),
       SafeArea(child: PageComingSoon("Magic Shop")),
       SafeArea(child: PageComingSoon("Fun Games")),

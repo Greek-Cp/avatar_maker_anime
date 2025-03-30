@@ -577,7 +577,7 @@ class _PageMakerCharacterState extends State<PageMakerCharacter>
     final iconSize = size.width * 0.06;
     final menuButtonSize = size.width * 0.11;
     final cameraButtonSize = size.width * 0.14;
-    final characterSize = size.width * 0.7;
+    final characterSize = size.width * 0.8;
 
     return Container(
       width: double.infinity,

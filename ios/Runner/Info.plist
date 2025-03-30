@@ -8,6 +8,12 @@
 	<string>Avatar Maker</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
+<key>NSPhotoLibraryAddUsageDescription</key>
+<string>We need permission to save photos and videos to your library for your convenience.</string>
+
+<key>NSPhotoLibraryUsageDescription</key>
+<string>We need permission to access your photo library to view and select your photos and videos.</string>
+
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
