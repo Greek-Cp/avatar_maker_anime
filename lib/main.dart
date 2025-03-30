@@ -1,4 +1,3 @@
-import 'package:avatar_maker/controller/AvatarController.dart';
 import 'package:avatar_maker/page/PageBase.dart';
 import 'package:avatar_maker/page/intro/PageIntroGame.dart';
 import 'package:avatar_maker/page/repo/AssetRepo.dart';
@@ -8,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import 'controller/AvatarController.dart';
 import 'page/maker/PageMakerCharacter.dart';
 
 void main() {
@@ -47,7 +47,6 @@ class MainApp extends StatelessWidget {
         GetPage(name: SplashScreen.routeName, page: () => SplashScreen()),
         GetPage(name: IntroScreen.routeName, page: () => IntroScreen()),
         GetPage(name: PageBase.routeName, page: () => PageBase()),
-        GetPage(name: PageBase.routeName.toString(), page: () => PageBase()),
         // GetPage(
         //     name: Playground.routeName.toString(), page: () => Playground()),
         GetPage(
