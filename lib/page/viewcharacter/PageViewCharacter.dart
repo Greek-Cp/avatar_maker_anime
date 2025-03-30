@@ -1,467 +1,172 @@
-import 'package:avatar_maker/controller/AvatarController.dart';
-import 'package:avatar_maker/page/maker/PageMakerCharacter.dart';
-import 'package:avatar_maker/page/repo/AssetRepo.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:avatar_maker/component/ComponentButton.dart';
-import 'package:avatar_maker/component/ComponentText.dart';
-import 'package:avatar_maker/util/ColorApp.dart';
-import 'package:drop_shadow_image/drop_shadow_image.dart';
-import 'package:flutter/material.dart';
-import 'dart:ui' as ui;
-import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
+import 'dart:ui';
 
-import 'package:get/get.dart';
 import 'package:avatar_maker/controller/AvatarController.dart';
 import 'package:avatar_maker/page/maker/PageMakerCharacter.dart';
-import 'package:avatar_maker/page/repo/AssetRepo.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get.dart';
-import 'package:avatar_maker/controller/AvatarController.dart';
-import 'package:avatar_maker/page/maker/PageMakerCharacter.dart';
-import 'package:avatar_maker/page/repo/AssetRepo.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
-import 'package:get/get.dart';
-import 'package:avatar_maker/controller/AvatarController.dart';
-import 'package:avatar_maker/page/maker/PageMakerCharacter.dart';
-import 'package:avatar_maker/page/repo/AssetRepo.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
-class PageViewCharacter extends StatelessWidget {
-  // Warna tema estetika
-  final Color primaryColor = Color(0xFFFA9ECC);
-  final Color secondaryColor = Color(0xFFFFC0D9);
-  final Color accentColor = Color(0xFFAA336A);
-  final Color backgroundColor = Color(0xFFFFF0F5);
-  final Color textColor = Color(0xFF4A4A4A);
+class AvatarHistoryPage extends StatelessWidget {
+  static String routeName = "/AvatarHistoryPage";
 
-  // Controllers
-  final AssetRepo repositoryAsset = Get.find<AssetRepo>();
-  final SaveAvatarController saveAvatarController =
-      Get.find<SaveAvatarController>();
-  final AvatarController avatarController = Get.put(AvatarController());
+  final SaveAvatarController saveController = Get.find<SaveAvatarController>();
+  final AvatarController avatarController = Get.find<AvatarController>();
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+
     return Scaffold(
-      backgroundColor: backgroundColor,
-      body: SafeArea(
-        child: Obx(() {
-          final listLayer = saveAvatarController.listAvatar;
-
-          if (listLayer.isEmpty) {
-            return _buildEmptyState();
-          } else {
-            return _buildAvatarGrid(listLayer);
-          }
-        }),
-      ),
-    );
-  }
-
-  Widget _buildEmptyState() {
-    return Center(
-      child: AnimationConfiguration.synchronized(
-        duration: const Duration(milliseconds: 500),
-        child: SlideAnimation(
-          verticalOffset: 50.0,
-          child: FadeInAnimation(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 120.w,
-                  height: 120.w,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: primaryColor.withOpacity(0.2),
-                        blurRadius: 15,
-                        offset: Offset(0, 5),
-                      ),
-                    ],
-                  ),
-                  child: Icon(
-                    Icons.person_outline,
-                    size: 60.w,
-                    color: primaryColor.withOpacity(0.5),
-                  ),
-                ),
-                Text(
-                  "No Avatars Yet",
-                  style: TextStyle(
-                    color: textColor,
-                    fontSize: 22.sp,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 15.h),
-                Text(
-                  "Create your first anime avatar!",
-                  style: TextStyle(
-                    color: Colors.grey,
-                    fontSize: 16.sp,
-                  ),
-                ),
-                SizedBox(height: 40.h),
-                _buildCreateButton(),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAvatarGrid(RxList<List<String>> listLayer) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "My Collection",
-                style: TextStyle(
-                  color: accentColor,
-                  fontSize: 28.sp,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              SizedBox(height: 8.h),
-              Row(
-                children: [
-                  Text(
-                    "${listLayer.length} Avatar${listLayer.length > 1 ? 's' : ''}",
-                    style: TextStyle(
-                      color: textColor,
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  Spacer(),
-                  Container(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-                    decoration: BoxDecoration(
-                      color: primaryColor.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(20.r),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.sort,
-                          size: 18.w,
-                          color: accentColor,
-                        ),
-                        SizedBox(width: 5.w),
-                        Text(
-                          "Latest",
-                          style: TextStyle(
-                            color: accentColor,
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFFDAD7FF),
+              Color(0xFFFFE0F3),
             ],
           ),
         ),
-        Expanded(
-          child: AnimationLimiter(
-            child: GridView.builder(
-              padding: EdgeInsets.symmetric(horizontal: 15.w),
-              physics: BouncingScrollPhysics(),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 15.w,
-                mainAxisSpacing: 15.w,
-                childAspectRatio: 0.8,
-              ),
-              itemCount: listLayer.length,
-              itemBuilder: (context, index) {
-                return AnimationConfiguration.staggeredGrid(
-                  position: index,
-                  duration: const Duration(milliseconds: 375),
-                  columnCount: 2,
-                  child: ScaleAnimation(
-                    child: FadeInAnimation(
-                      child: _buildAvatarCard(listLayer, index),
-                    ),
-                  ),
-                );
-              },
-            ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              _buildAppBar(context, size),
+              SizedBox(height: 10),
+              _buildHeaderText(size),
+              SizedBox(height: 15),
+              _buildAvatarGrid(size),
+            ],
           ),
-        ),
-        Padding(
-          padding: EdgeInsets.all(20.w),
-          child: _buildCreateButton(),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAvatarCard(List<List<String>> listLayer, int index) {
-    return GestureDetector(
-      onTap: () => _showCardOptionsDialog(index),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20.r),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.15),
-              blurRadius: 10,
-              offset: Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            Expanded(
-              child: Stack(
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      color: secondaryColor.withOpacity(0.2),
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(20.r),
-                        topRight: Radius.circular(20.r),
-                      ),
-                    ),
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: listLayer[index]
-                          .map((item) => Image.asset(item))
-                          .toList(),
-                    ),
-                  ),
-                  Positioned(
-                    top: 10,
-                    right: 10,
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(15.r),
-                        onTap: () => _showDeleteDialog(index),
-                        child: Container(
-                          padding: EdgeInsets.all(8.r),
-                          decoration: BoxDecoration(
-                            color: Colors.red[50],
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.1),
-                                blurRadius: 4,
-                                offset: Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Icon(
-                            Icons.delete_outline,
-                            color: Colors.red[300],
-                            size: 20.w,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    top: 10,
-                    left: 10,
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(15.r),
-                        onTap: () => _loadCharacter(index),
-                        child: Container(
-                          padding: EdgeInsets.all(8.r),
-                          decoration: BoxDecoration(
-                            color: Colors.green[50],
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.1),
-                                blurRadius: 4,
-                                offset: Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Icon(
-                            Icons.download_outlined,
-                            color: Colors.green[400],
-                            size: 20.w,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 12.h),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(20.r),
-                  bottomRight: Radius.circular(20.r),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Avatar ${index + 1}",
-                        style: TextStyle(
-                          color: textColor,
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      Text(
-                        "Anime",
-                        style: TextStyle(
-                          color: Colors.grey,
-                          fontSize: 12.sp,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Spacer(),
-                  Container(
-                    width: 30.w,
-                    height: 30.w,
-                    decoration: BoxDecoration(
-                      color: primaryColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(15.r),
-                    ),
-                    child: Icon(
-                      Icons.more_horiz,
-                      color: accentColor,
-                      size: 18.w,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
         ),
       ),
     );
   }
 
-  Widget _buildCreateButton() {
+  Widget _buildAppBar(BuildContext context, Size size) {
+    final buttonSize = size.width * 0.1;
+
     return Container(
-      width: double.infinity,
-      height: 55.h,
-      child: ElevatedButton(
-        onPressed: () => Get.to(() => PageMakerCharacter()),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: accentColor,
-          elevation: 5,
-          shadowColor: accentColor.withOpacity(0.3),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15.r),
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          _buildGlassButton(
+            onTap: () => Get.back(),
+            child: Icon(Icons.arrow_back_ios_rounded,
+                color: Colors.white, size: buttonSize * 0.45),
+            width: buttonSize,
+            height: buttonSize,
           ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.add_circle_outline,
-              size: 22.w,
+          Text(
+            "Avatar History",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: size.width * 0.055,
+              fontWeight: FontWeight.bold,
+              shadows: [
+                Shadow(
+                  color: Colors.purple.withOpacity(0.3),
+                  offset: Offset(1, 1),
+                  blurRadius: 2,
+                ),
+              ],
             ),
-            SizedBox(width: 10.w),
-            Text(
+          ),
+          SizedBox(width: buttonSize), // Empty space for balance
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeaderText(Size size) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 20),
+      child: Text(
+        "Your saved avatars",
+        style: TextStyle(
+          color: Color(0xFF666CFF),
+          fontSize: size.width * 0.045,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAvatarGrid(Size size) {
+    return Expanded(
+      child: Obx(() {
+        final avatars = saveController.listAvatar;
+
+        if (avatars.isEmpty) {
+          return _buildEmptyState(size);
+        }
+
+        return GridView.builder(
+          padding: EdgeInsets.all(15),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            childAspectRatio: 0.8,
+            crossAxisSpacing: 15,
+            mainAxisSpacing: 15,
+          ),
+          itemCount: avatars.length,
+          itemBuilder: (context, index) {
+            return _buildAvatarCard(index, size);
+          },
+        );
+      }),
+    );
+  }
+
+  Widget _buildEmptyState(Size size) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.image_not_supported_outlined,
+            size: size.width * 0.2,
+            color: Color(0xFF9387FF).withOpacity(0.5),
+          ),
+          SizedBox(height: 20),
+          Text(
+            "No avatars saved yet",
+            style: TextStyle(
+              color: Color(0xFF666CFF),
+              fontSize: size.width * 0.05,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          SizedBox(height: 10),
+          Text(
+            "Create and save your first avatar!",
+            style: TextStyle(
+              color: Color(0xFF666CFF).withOpacity(0.7),
+              fontSize: size.width * 0.04,
+            ),
+          ),
+          SizedBox(height: 30),
+          _buildGlassButton(
+            onTap: () => Get.toNamed(PageMakerCharacter.routeName),
+            width: size.width * 0.5,
+            height: size.height * 0.06,
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFFFF89B3).withOpacity(0.8),
+                Color(0xFFFF6CAB).withOpacity(0.6),
+              ],
+            ),
+            child: Text(
               "Create New Avatar",
               style: TextStyle(
-                fontSize: 16.sp,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 0.5,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showDeleteDialog(int index) {
-    Get.dialog(
-      AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20.r),
-        ),
-        title: Row(
-          children: [
-            Icon(
-              Icons.delete_outline,
-              color: Colors.red[400],
-              size: 24.w,
-            ),
-            SizedBox(width: 10.w),
-            Text(
-              "Delete Avatar",
-              style: TextStyle(
-                color: textColor,
+                color: Colors.white,
+                fontSize: size.width * 0.04,
                 fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-        content: Text(
-          "Are you sure you want to delete this avatar? This action cannot be undone.",
-          style: TextStyle(
-            color: Colors.grey[700],
-            fontSize: 14.sp,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: Text(
-              "Cancel",
-              style: TextStyle(
-                color: Colors.grey,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              // Hapus avatar dari controller
-              saveAvatarController.deleteAvatar(index);
-              Get.back();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red[400],
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10.r),
-              ),
-            ),
-            child: Text(
-              "Delete",
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
               ),
             ),
           ),
@@ -470,149 +175,281 @@ class PageViewCharacter extends StatelessWidget {
     );
   }
 
-  // Fungsi untuk memuat avatar ke editor
-  void _loadCharacter(int index) {
-    avatarController.loadAvatarForEdit(index);
+  Widget _buildAvatarCard(int index, Size size) {
+    final avatarLayers = saveController.listAvatar[index];
 
-    Get.snackbar(
-      "Avatar Loaded",
-      "Avatar is ready to edit",
-      snackPosition: SnackPosition.TOP,
-      backgroundColor: Colors.green[100],
-      colorText: Colors.green[800],
-      margin: EdgeInsets.all(10),
-      borderRadius: 10,
-      isDismissible: true,
-      duration: Duration(seconds: 2),
-      icon: Icon(Icons.check_circle, color: Colors.green[800]),
-    );
-  }
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        color: Colors.white.withOpacity(0.4),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.5),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 5,
+            spreadRadius: 0,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+          child: Column(
+            children: [
+              // Avatar preview
+              Expanded(
+                child: Container(
+                  padding: EdgeInsets.all(10),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Color(0xFFB0A6FF).withOpacity(0.3),
+                    ),
+                    child: Stack(
+                      alignment: Alignment.bottomCenter,
+                      children: avatarLayers
+                          .map((layer) => Image.asset(layer))
+                          .toList(),
+                    ),
+                  ),
+                ),
+              ),
 
-  void _showCardOptionsDialog(int index) {
-    Get.bottomSheet(
-      Container(
-        height: 230.h,
-        padding: EdgeInsets.all(20.w),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(25.r),
-            topRight: Radius.circular(25.r),
+              // Action buttons
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Color(0xFFB0A6FF).withOpacity(0.2),
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(20),
+                    bottomRight: Radius.circular(20),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Edit button
+                    InkWell(
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        avatarController.loadAvatarForEdit(index);
+                      },
+                      child: Container(
+                        padding: EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Color(0xFF9387FF).withOpacity(0.6),
+                        ),
+                        child: Icon(
+                          Icons.edit,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+
+                    // Avatar number
+                    Text(
+                      "Avatar ${index + 1}",
+                      style: TextStyle(
+                        color: Color(0xFF666CFF),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+
+                    // Delete button
+                    InkWell(
+                      onTap: () => _showDeleteConfirmation(index),
+                      child: Container(
+                        padding: EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Color(0xFFFF6CAB).withOpacity(0.6),
+                        ),
+                        child: Icon(
+                          Icons.delete,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
-        child: Column(
-          children: [
-            Container(
-              width: 40.w,
-              height: 5.h,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(5.r),
-              ),
-            ),
-            SizedBox(height: 15.h),
-            Text(
-              "Avatar Options",
-              style: TextStyle(
-                color: textColor,
-                fontSize: 18.sp,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: 20.h),
-            _buildOptionButton(
-              icon: Icons.edit_outlined,
-              label: "Edit Avatar",
-              color: Colors.green[400]!,
-              onTap: () {
-                _loadCharacter(index);
-                Get.back();
-              },
-            ),
-            SizedBox(height: 10.h),
-            _buildOptionButton(
-              icon: Icons.share_outlined,
-              label: "Share Avatar",
-              color: Colors.blue[400]!,
-              onTap: () {
-                Get.back();
-                Get.snackbar(
-                  "Sharing",
-                  "Sharing feature coming soon!",
-                  snackPosition: SnackPosition.BOTTOM,
-                );
-              },
-            ),
-            SizedBox(height: 10.h),
-            _buildOptionButton(
-              icon: Icons.delete_outline,
-              label: "Delete Avatar",
-              color: Colors.red[400]!,
-              onTap: () {
-                Get.back();
-                _showDeleteDialog(index);
-              },
-            ),
-          ],
-        ),
       ),
-      backgroundColor: Colors.transparent,
-      isDismissible: true,
-      enableDrag: true,
     );
   }
 
-  Widget _buildOptionButton({
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
+  void _showDeleteConfirmation(int index) {
+    Get.dialog(
+      BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+        child: Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: Container(
+            padding: EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              color: Colors.white.withOpacity(0.7),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.8),
+                width: 1.5,
+              ),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.warning_amber_rounded,
+                  color: Color(0xFFFF6CAB),
+                  size: 50,
+                ),
+                SizedBox(height: 15),
+                Text(
+                  "Delete Avatar?",
+                  style: TextStyle(
+                    color: Color(0xFF666CFF),
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 10),
+                Text(
+                  "This action cannot be undone.",
+                  style: TextStyle(
+                    color: Color(0xFF666CFF).withOpacity(0.7),
+                    fontSize: 14,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: _buildGlassButton(
+                        onTap: () => Get.back(),
+                        width: double.infinity,
+                        height: 45,
+                        child: Text(
+                          "Cancel",
+                          style: TextStyle(
+                            color: Color(0xFF666CFF),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 15),
+                    Expanded(
+                      child: _buildGlassButton(
+                        onTap: () {
+                          saveController.deleteAvatar(index);
+                          Get.back();
+                          Get.snackbar(
+                            "Avatar Deleted",
+                            "Your avatar has been removed",
+                            snackPosition: SnackPosition.TOP,
+                            backgroundColor: Color(0xFFFF6CAB).withOpacity(0.8),
+                            colorText: Colors.white,
+                            margin: EdgeInsets.all(10),
+                            duration: Duration(seconds: 2),
+                          );
+                        },
+                        width: double.infinity,
+                        height: 45,
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Color(0xFFFF89B3).withOpacity(0.8),
+                            Color(0xFFFF6CAB).withOpacity(0.6),
+                          ],
+                        ),
+                        child: Text(
+                          "Delete",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGlassButton({
+    required Widget child,
+    required Function()? onTap,
+    required double width,
+    required double height,
+    Gradient? gradient,
   }) {
-    return InkWell(
+    return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 20.w),
+        width: width,
+        height: height,
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(15.r),
-          border: Border.all(
-            color: Colors.grey[200]!,
-            width: 1,
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: EdgeInsets.all(8.r),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                shape: BoxShape.circle,
+          borderRadius: BorderRadius.circular(height * 0.4),
+          gradient: gradient ??
+              LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.white.withOpacity(0.5),
+                  Colors.white.withOpacity(0.3),
+                ],
               ),
-              child: Icon(
-                icon,
-                color: color,
-                size: 20.w,
-              ),
-            ),
-            SizedBox(width: 15.w),
-            Text(
-              label,
-              style: TextStyle(
-                color: textColor,
-                fontSize: 16.sp,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            Spacer(),
-            Icon(
-              Icons.arrow_forward_ios,
-              color: Colors.grey,
-              size: 16.w,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 5,
+              spreadRadius: 0,
+              offset: Offset(0, 2),
             ),
           ],
+          border: Border.all(
+            color: Colors.white.withOpacity(0.5),
+            width: 1.5,
+          ),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(height * 0.4),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+            child: Container(
+              color: Colors.transparent,
+              child: Center(child: child),
+            ),
+          ),
         ),
       ),
     );
+  }
+}
+
+// Ensure the SaveAvatarController has the necessary methods
+extension SaveAvatarControllerExtension on SaveAvatarController {
+  // Method to delete avatar (ensure this exists in your SaveAvatarController)
+  void deleteAvatar(int index) {
+    listAvatar.removeAt(index);
+    saveAvatarsToStorage(); // Make sure this method exists in your controller
   }
 }

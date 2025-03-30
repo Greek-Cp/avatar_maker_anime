@@ -1,3 +1,3 @@
-# avatar_maker
+\# avatar_maker
 
 A new Flutter project.

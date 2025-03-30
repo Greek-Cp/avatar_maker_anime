@@ -1,7 +1,5 @@
-import 'package:avatar_maker/component/ComponentButton.dart';
 import 'package:avatar_maker/component/ComponentText.dart';
 import 'package:avatar_maker/page/PageBase.dart';
-import 'package:avatar_maker/page/repo/AssetRepo.dart';
 import 'package:avatar_maker/util/ColorApp.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -28,7 +26,6 @@ class _PageIntroGameState extends State<PageIntroGame> {
     });
   }
 
-  final repoController = Get.put(AssetRepo());
   @override
   Widget build(BuildContext context) {
     // TODO: implement build

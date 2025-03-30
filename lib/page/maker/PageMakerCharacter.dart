@@ -1,20 +1,18 @@
-import 'dart:math';
+import 'dart:async';
 import 'dart:math' as math;
+import 'dart:math';
+import 'dart:ui' as ui;
 import 'dart:ui';
 
-import 'package:avatar_maker/component/ComponentButton.dart';
 import 'package:avatar_maker/controller/AvatarController.dart';
 import 'package:avatar_maker/page/repo/AssetRepo.dart';
-import 'package:avatar_maker/util/ColorApp.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'dart:ui' as ui;
 import 'package:flutter/services.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:get/get.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
-import '../../component/ComponentItem.dart';
+
 import '../../assets_class/Part15_class15.dart';
 
 class AvatarController extends GetxController {
@@ -31,12 +29,24 @@ class AvatarController extends GetxController {
     Get.to(() => PageMakerCharacter());
   }
 
-  // Memuat avatar dari SaveAvatarController untuk diedit
+  // Memuat avatar dari SaveAvatarController untuk diedit - FIXED VERSION
   void loadAvatarForEdit(int index) {
     final saveController = Get.find<SaveAvatarController>();
+    print("Loading avatar for edit, index: $index");
 
     if (index >= 0 && index < saveController.listAvatar.length) {
+      // First mark the avatar for editing in the SaveAvatarController
       saveController.loadAvatarForEditing(index);
+
+      // Make sure to properly remove any existing controller instance
+      if (Get.isRegistered<PageMakerCharacterController>()) {
+        Get.delete<PageMakerCharacterController>();
+      }
+
+      // Register the controller before navigation
+      Get.put(PageMakerCharacterController());
+
+      // Navigate to the page
       Get.to(() => PageMakerCharacter());
     }
   }
@@ -78,39 +88,59 @@ class PageMakerCharacterController extends GetxController
   void onInit() {
     super.onInit();
 
+    print("PageMakerCharacterController: onInit called");
+
     // Setup animation controller
     animationController = AnimationController(
       vsync: this,
       duration: Duration(milliseconds: 300),
     );
 
-    // Inisialisasi map untuk menyimpan item yang dipilih
+    // Initialize map for selected items
     final itemMakerLength = assetRepo.listItemMaker.length;
     for (int i = 0; i < itemMakerLength; i++) {
       selectedItemsPerCategory[i] = 0;
     }
 
-    // Check if we're editing an existing avatar
+    // Check if editing mode - pull data from SaveAvatarController
+    print(
+        "SaveAvatarController editing index: ${saveAvatarController.editingIndex.value}");
+    print(
+        "SaveAvatarController current editing avatar: ${saveAvatarController.currentEditingAvatar}");
+
     if (saveAvatarController.editingIndex.value >= 0) {
       // We're in editing mode
+      print("EDIT MODE DETECTED!");
       isEditing.value = true;
       editingIndex.value = saveAvatarController.editingIndex.value;
 
       // Load the avatar being edited
       final avatarToEdit = saveAvatarController.currentEditingAvatar;
       if (avatarToEdit.isNotEmpty) {
-        listAvatarLayerString.value = List.from(avatarToEdit);
-        listImageLayer.value = List.generate(
-            avatarToEdit.length,
-            (index) => Image.asset(
-                  avatarToEdit[index],
-                  fit: BoxFit.fitWidth,
-                ));
+        print(
+            "Loading avatar data for editing, layers: ${avatarToEdit.length}");
 
-        // Identifikasi item yang dipilih untuk setiap kategori
+        // Make sure listAvatarLayerString is initialized with the correct length
+        listAvatarLayerString.value = List<String>.from(avatarToEdit);
+
+        // Initialize listImageLayer with the proper images
+        listImageLayer.value = List<Widget>.generate(
+          avatarToEdit.length,
+          (index) => Image.asset(
+            avatarToEdit[index],
+            fit: BoxFit.fitWidth,
+          ),
+        );
+
+        // Identify selected items for each category
         _identifySelectedItems();
+        print("Selected items per category: $selectedItemsPerCategory");
+      } else {
+        print("ERROR: avatarToEdit is empty!");
+        _initializeRandomAvatar(); // Fallback to random if edit data is missing
       }
     } else {
+      print("NORMAL MODE - Initializing random avatar");
       // Initialize with random character
       _initializeRandomAvatar();
     }
@@ -121,20 +151,36 @@ class PageMakerCharacterController extends GetxController
     for (int categoryIndex = 0;
         categoryIndex < assetRepo.listItemMaker.length;
         categoryIndex++) {
-      final categoryItems = assetRepo.listItemMaker[categoryIndex].listItem!;
-      final currentAsset = listAvatarLayerString[categoryIndex];
+      if (categoryIndex < listAvatarLayerString.length) {
+        final categoryItems = assetRepo.listItemMaker[categoryIndex].listItem!;
+        final currentAsset = listAvatarLayerString[categoryIndex];
 
-      for (int itemIndex = 0; itemIndex < categoryItems.length; itemIndex++) {
-        if (categoryItems[itemIndex] == currentAsset) {
-          selectedItemsPerCategory[categoryIndex] = itemIndex;
-          break;
+        bool foundMatch = false;
+        for (int itemIndex = 0; itemIndex < categoryItems.length; itemIndex++) {
+          if (categoryItems[itemIndex] == currentAsset) {
+            selectedItemsPerCategory[categoryIndex] = itemIndex;
+            foundMatch = true;
+            print(
+                "Category $categoryIndex: selected item $itemIndex (${categoryItems[itemIndex]})");
+            break;
+          }
+        }
+
+        if (!foundMatch) {
+          print(
+              "WARNING: No match found for asset ${currentAsset} in category $categoryIndex");
+          selectedItemsPerCategory[categoryIndex] = 0; // Default to first item
         }
       }
     }
+
+    // Update the currently selected item based on the current category
+    itemSelected.value = selectedItemsPerCategory[partSelected.value] ?? 0;
   }
 
   void _initializeRandomAvatar() {
     final listItemMaker = assetRepo.listItemMaker;
+    randNumber.clear(); // Clear previous random numbers if any
 
     listImageLayer.value = List.generate(listItemMaker.length, (index) {
       int tnd = Random().nextInt(listItemMaker[index].listItem!.length);
@@ -236,10 +282,12 @@ class PageMakerCharacterController extends GetxController
 
     try {
       if (isEditing.value && editingIndex.value >= 0) {
+        print("Updating existing avatar at index ${editingIndex.value}");
         // Update existing avatar
         await saveAvatarController.updateAvatarAtIndex(
             editingIndex.value, listAvatarLayerString.toList());
       } else {
+        print("Saving new avatar");
         // Save new avatar
         await saveAvatarController.saveAvatar(listAvatarLayerString.toList());
       }
@@ -313,16 +361,48 @@ class PageMakerCharacterController extends GetxController
   }
 }
 
-class PageMakerCharacter extends StatelessWidget {
+class PageMakerCharacter extends StatefulWidget {
   static String routeName = "/PageMakerCharacter";
 
+  @override
+  State<PageMakerCharacter> createState() => _PageMakerCharacterState();
+}
+
+class _PageMakerCharacterState extends State<PageMakerCharacter>
+    with SingleTickerProviderStateMixin {
   final PageMakerCharacterController controller =
-      Get.put(PageMakerCharacterController());
+      Get.find<PageMakerCharacterController>();
 
   final RxBool isMenuOpen = false.obs;
 
+  // Animation controllers for bubbles
+  late AnimationController _bubbleAnimationController;
+  late List<Bubble> bubbles;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Initialize bubble animation controller
+    _bubbleAnimationController = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 4000),
+    )..repeat();
+
+    // Generate random bubbles
+    bubbles = List.generate(20, (index) => Bubble());
+  }
+
+  @override
+  void dispose() {
+    _bubbleAnimationController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -338,42 +418,95 @@ class PageMakerCharacter extends StatelessWidget {
           ),
         ),
         child: SafeArea(
-          child: ScreenUtilInit(
-            designSize: const Size(375, 812),
-            builder: (context, child) {
-              return Column(
-                children: [
-                  _buildAppBar(),
-                  Expanded(
-                    child: _buildMainContent(),
-                  ),
-                ],
-              );
-            },
+          child: Column(
+            children: [
+              _buildAppBar(size),
+              Expanded(
+                child: Stack(
+                  children: [
+                    // Animated bubbles in background
+                    ...generateBubbles(size),
+
+                    // Main content
+                    _buildMainContent(size),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildAppBar() {
+  List<Widget> generateBubbles(Size size) {
+    return List.generate(bubbles.length, (index) {
+      return AnimatedBuilder(
+        animation: _bubbleAnimationController,
+        builder: (context, child) {
+          final bubble = bubbles[index];
+
+          // Calculate bubble's current position
+          final progress =
+              (_bubbleAnimationController.value + bubble.offset!) % 1.0;
+          final yPos =
+              size.height - progress * (size.height + bubble.size! * 2);
+          final xOffset = math.sin((progress * bubble.curve!) * math.pi * 2) *
+              bubble.waveWidth!;
+
+          return Positioned(
+            left: (bubble.position! * size.width) + xOffset,
+            top: yPos,
+            child: Opacity(
+              opacity: bubble.opacity!,
+              child: Container(
+                width: bubble.size,
+                height: bubble.size,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      bubble.color!.withOpacity(0.7),
+                      bubble.color!.withOpacity(0.3),
+                    ],
+                    stops: [0.4, 1.0],
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: bubble.color!.withOpacity(0.3),
+                      blurRadius: 5,
+                      spreadRadius: 1,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      );
+    });
+  }
+
+  Widget _buildAppBar(Size size) {
+    final buttonSize = size.width * 0.1;
+
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           _buildGlassButton(
             onTap: () => Get.back(),
             child: Icon(Icons.arrow_back_ios_rounded,
-                color: Colors.white, size: 18.sp),
-            width: 40.w,
-            height: 40.w,
+                color: Colors.white, size: buttonSize * 0.45),
+            width: buttonSize,
+            height: buttonSize,
           ),
           Text(
             "Create Your Avatar",
             style: TextStyle(
               color: Colors.white,
-              fontSize: 22.sp,
+              fontSize: size.width * 0.055,
               fontWeight: FontWeight.bold,
               shadows: [
                 Shadow(
@@ -385,75 +518,96 @@ class PageMakerCharacter extends StatelessWidget {
             ),
           ),
           _buildGlassButton(
-            onTap: () => _showHelpDialog(Get.context!),
+            onTap: () => _showHelpDialog(context),
             child: Icon(Icons.help_outline_rounded,
-                color: Colors.white, size: 18.sp),
-            width: 40.w,
-            height: 40.w,
+                color: Colors.white, size: buttonSize * 0.45),
+            width: buttonSize,
+            height: buttonSize,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildMainContent() {
+  Widget _buildMainContent(Size size) {
+    // Calculate responsive dimensions
+    final characterPreviewFlex = 6;
+    final customizationAreaFlex = 5;
+    final totalFlex = characterPreviewFlex + customizationAreaFlex;
+
     return Column(
       children: [
         // Character Preview Section - Larger portion
-        Expanded(
-          flex: 6, // Increased size
-          child: _buildCharacterPreview(),
+        Container(
+          height: size.height * (characterPreviewFlex / totalFlex) * 0.75,
+          child: _buildCharacterPreview(size),
         ),
         // Customization Area
         Expanded(
-          flex: 5,
-          child: _buildCustomizationArea(),
+          child: _buildCustomizationArea(size),
         ),
       ],
     );
   }
 
-  Widget _buildCharacterPreview() {
+  Widget _buildCharacterPreview(Size size) {
+    final iconSize = size.width * 0.06;
+    final menuButtonSize = size.width * 0.11;
+    final cameraButtonSize = size.width * 0.14;
+    final characterSize = size.width * 0.7;
+
     return Container(
       width: double.infinity,
       child: Stack(
         children: [
           // Character and Background - Positioned higher but still touching bottom
           Positioned.fill(
-            bottom: -20.h, // Shift character up while keeping it attached
+            bottom: -20, // Shift character up while keeping it attached
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 // Larger character
-                _buildCharacterWithBackground(),
+                _buildCharacterWithBackground(characterSize),
               ],
             ),
           ),
 
           // Menu Button (3 dots)
           Positioned(
-            top: 10.h,
-            right: 16.w,
-            child: _buildMenuButton(),
+            top: 10,
+            right: 16,
+            child: _buildGlassButton(
+              onTap: () {
+                isMenuOpen.value = !isMenuOpen.value;
+                HapticFeedback.lightImpact();
+              },
+              width: menuButtonSize,
+              height: menuButtonSize,
+              child: Icon(
+                Icons.more_vert,
+                color: Colors.white,
+                size: iconSize,
+              ),
+            ),
           ),
 
           // Action menu - only visible when menu is open
           Obx(() => isMenuOpen.value
               ? Positioned(
-                  top: 70.h,
-                  right: 16.w,
-                  child: _buildActionMenu(),
+                  top: 70,
+                  right: 16,
+                  child: _buildActionMenu(size),
                 )
               : SizedBox.shrink()),
 
           // Camera button
           Positioned(
-            bottom: 16.h,
-            left: 16.w,
+            bottom: 16,
+            left: 16,
             child: _buildGlassButton(
               onTap: () => controller.saveOrUpdateAvatar(),
-              width: 56.w,
-              height: 56.w,
+              width: cameraButtonSize,
+              height: cameraButtonSize,
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -465,8 +619,8 @@ class PageMakerCharacter extends StatelessWidget {
               child: Obx(
                 () => controller.isLoading.value
                     ? SizedBox(
-                        width: 24.w,
-                        height: 24.w,
+                        width: cameraButtonSize * 0.43,
+                        height: cameraButtonSize * 0.43,
                         child: CircularProgressIndicator(
                           valueColor:
                               AlwaysStoppedAnimation<Color>(Colors.white),
@@ -476,7 +630,7 @@ class PageMakerCharacter extends StatelessWidget {
                     : Icon(
                         Icons.camera_alt_rounded,
                         color: Colors.white,
-                        size: 24.w,
+                        size: cameraButtonSize * 0.43,
                       ),
               ),
             ),
@@ -486,27 +640,15 @@ class PageMakerCharacter extends StatelessWidget {
     );
   }
 
-  Widget _buildMenuButton() {
-    return _buildGlassButton(
-      onTap: () {
-        isMenuOpen.value = !isMenuOpen.value;
-        HapticFeedback.lightImpact();
-      },
-      width: 45.w,
-      height: 45.w,
-      child: Icon(
-        Icons.more_vert,
-        color: Colors.white,
-        size: 24.sp,
-      ),
-    );
-  }
+  Widget _buildActionMenu(Size size) {
+    final menuWidth = size.width * 0.16;
+    final iconSize = size.width * 0.06;
+    final fontSize = size.width * 0.025;
 
-  Widget _buildActionMenu() {
     return Container(
-      width: 65.w,
+      width: menuWidth,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(16),
         color: Colors.white.withOpacity(0.5),
         boxShadow: [
           BoxShadow(
@@ -522,7 +664,7 @@ class PageMakerCharacter extends StatelessWidget {
         ),
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(16),
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
           child: Column(
@@ -534,8 +676,10 @@ class PageMakerCharacter extends StatelessWidget {
                 color: Color(0xFF84CAFF),
                 onTap: () {
                   isMenuOpen.value = false;
-                  _showLayersBottomSheet(Get.context!);
+                  _showLayersBottomSheet(context);
                 },
+                iconSize: iconSize,
+                fontSize: fontSize,
               ),
               Divider(height: 1, color: Colors.white.withOpacity(0.3)),
               _buildMenuOption(
@@ -546,6 +690,8 @@ class PageMakerCharacter extends StatelessWidget {
                   isMenuOpen.value = false;
                   controller.randomizeAvatar();
                 },
+                iconSize: iconSize,
+                fontSize: fontSize,
               ),
               Divider(height: 1, color: Colors.white.withOpacity(0.3)),
               _buildMenuOption(
@@ -556,6 +702,8 @@ class PageMakerCharacter extends StatelessWidget {
                   isMenuOpen.value = false;
                   controller.clearAvatar();
                 },
+                iconSize: iconSize,
+                fontSize: fontSize,
               ),
             ],
           ),
@@ -569,26 +717,28 @@ class PageMakerCharacter extends StatelessWidget {
     required String label,
     required Color color,
     required Function() onTap,
+    required double iconSize,
+    required double fontSize,
   }) {
     return InkWell(
       onTap: onTap,
       child: Container(
         width: double.infinity,
-        padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 8.w),
+        padding: EdgeInsets.symmetric(vertical: 12, horizontal: 8),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               icon,
               color: color,
-              size: 24.sp,
+              size: iconSize,
             ),
-            SizedBox(height: 6.h),
+            SizedBox(height: 6),
             Text(
               label,
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 10.sp,
+                fontSize: fontSize,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -598,10 +748,14 @@ class PageMakerCharacter extends StatelessWidget {
     );
   }
 
-  Widget _buildCharacterWithBackground() {
+  Widget _buildCharacterWithBackground(double size) {
+    final innerCircleSize = size * 0.79;
+    final reflectionWidth = size * 0.71;
+    final reflectionHeight = size * 0.36;
+
     return Container(
-      width: 280.w, // Larger container for character
-      height: 280.w,
+      width: size,
+      height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: RadialGradient(
@@ -625,8 +779,8 @@ class PageMakerCharacter extends StatelessWidget {
         children: [
           // Inner circle
           Container(
-            width: 220.w,
-            height: 220.w,
+            width: innerCircleSize,
+            height: innerCircleSize,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: Color(0xFFB5C4FF).withOpacity(0.3),
@@ -635,10 +789,10 @@ class PageMakerCharacter extends StatelessWidget {
 
           // Reflection
           Positioned(
-            top: 50.h,
+            top: size * 0.18,
             child: Container(
-              width: 200.w,
-              height: 100.h,
+              width: reflectionWidth,
+              height: reflectionHeight,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: LinearGradient(
@@ -665,7 +819,7 @@ class PageMakerCharacter extends StatelessWidget {
           ),
 
           // Sparkles
-          ..._buildSparkles(),
+          ..._buildSparkles(size),
         ],
       ),
     );
@@ -701,18 +855,18 @@ class PageMakerCharacter extends StatelessWidget {
     });
   }
 
-  List<Widget> _buildSparkles() {
+  List<Widget> _buildSparkles(double characterSize) {
     final random = math.Random(42);
     return List.generate(6, (index) {
-      final size = 4.0 + random.nextDouble() * 4.0;
+      final size = characterSize * (0.014 + random.nextDouble() * 0.014);
       final angle = index * (math.pi * 2 / 6);
-      final radius = 120.0 + random.nextDouble() * 20.0;
+      final radius = characterSize * (0.43 + random.nextDouble() * 0.07);
       final x = math.cos(angle) * radius;
       final y = math.sin(angle) * radius;
 
       return Positioned(
-        left: 140.w + x,
-        top: 120.w + y,
+        left: characterSize * 0.5 + x,
+        top: characterSize * 0.43 + y,
         child: TweenAnimationBuilder(
           tween: Tween<double>(begin: 0.5, end: 1.0),
           duration: Duration(milliseconds: 1000 + index * 200),
@@ -723,8 +877,8 @@ class PageMakerCharacter extends StatelessWidget {
             return Opacity(
               opacity: safeOpacity,
               child: Container(
-                width: size.w,
-                height: size.w,
+                width: size,
+                height: size,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: Colors.white,
@@ -744,12 +898,14 @@ class PageMakerCharacter extends StatelessWidget {
     });
   }
 
-  Widget _buildCustomizationArea() {
+  Widget _buildCustomizationArea(Size size) {
+    final borderRadius = size.width * 0.08;
+
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(30.r),
-          topRight: Radius.circular(30.r),
+          topLeft: Radius.circular(borderRadius),
+          topRight: Radius.circular(borderRadius),
         ),
         gradient: LinearGradient(
           begin: Alignment.topCenter,
@@ -774,8 +930,8 @@ class PageMakerCharacter extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(30.r),
-          topRight: Radius.circular(30.r),
+          topLeft: Radius.circular(borderRadius),
+          topRight: Radius.circular(borderRadius),
         ),
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
@@ -783,10 +939,10 @@ class PageMakerCharacter extends StatelessWidget {
             color: Colors.white.withOpacity(0.1),
             child: Column(
               children: [
-                _buildDragHandle(),
-                _buildCategorySelector(),
+                _buildDragHandle(size),
+                _buildCategorySelector(size),
                 Expanded(
-                  child: _buildItemsGrid(),
+                  child: _buildItemsGrid(size),
                 ),
               ],
             ),
@@ -796,23 +952,25 @@ class PageMakerCharacter extends StatelessWidget {
     );
   }
 
-  Widget _buildDragHandle() {
+  Widget _buildDragHandle(Size size) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 10.h),
+      padding: EdgeInsets.symmetric(vertical: size.height * 0.012),
       child: Container(
-        width: 40.w,
-        height: 4.h,
+        width: size.width * 0.1,
+        height: size.height * 0.005,
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.7),
-          borderRadius: BorderRadius.circular(10.r),
+          borderRadius: BorderRadius.circular(size.width * 0.025),
         ),
       ),
     );
   }
 
-  Widget _buildCategorySelector() {
+  Widget _buildCategorySelector(Size size) {
+    final itemHeight = size.height * 0.086;
+
     return Container(
-      height: 70.h,
+      height: itemHeight,
       child: AnimationLimiter(
         child: GetBuilder<PageMakerCharacterController>(
           id: 'category_selector',
@@ -821,7 +979,7 @@ class PageMakerCharacter extends StatelessWidget {
             return ListView.builder(
               scrollDirection: Axis.horizontal,
               physics: BouncingScrollPhysics(),
-              padding: EdgeInsets.symmetric(horizontal: 12.w),
+              padding: EdgeInsets.symmetric(horizontal: size.width * 0.032),
               itemCount: listItemMaker.length,
               itemBuilder: (context, index) {
                 return AnimationConfiguration.staggeredList(
@@ -834,7 +992,8 @@ class PageMakerCharacter extends StatelessWidget {
                         final isSelected =
                             controller.partSelected.value == index;
                         return Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 5.w),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: size.width * 0.013),
                           child: GestureDetector(
                             onTap: () {
                               controller.changePartSelected(index);
@@ -843,9 +1002,10 @@ class PageMakerCharacter extends StatelessWidget {
                             },
                             child: AnimatedContainer(
                               duration: Duration(milliseconds: 300),
-                              width: 80.w,
+                              width: size.width * 0.21,
                               decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(14.r),
+                                borderRadius:
+                                    BorderRadius.circular(size.width * 0.037),
                                 color: isSelected
                                     ? Color(0xFFB5A6FF)
                                     : Colors.white.withOpacity(0.4),
@@ -856,21 +1016,22 @@ class PageMakerCharacter extends StatelessWidget {
                                 ),
                               ),
                               child: ClipRRect(
-                                borderRadius: BorderRadius.circular(14.r),
+                                borderRadius:
+                                    BorderRadius.circular(size.width * 0.037),
                                 child: BackdropFilter(
                                   filter:
                                       ImageFilter.blur(sigmaX: 5, sigmaY: 5),
                                   child: Container(
                                     color: Colors.transparent,
-                                    padding:
-                                        EdgeInsets.symmetric(horizontal: 8.w),
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: size.width * 0.021),
                                     child: Column(
                                       mainAxisAlignment:
                                           MainAxisAlignment.center,
                                       children: [
                                         Container(
-                                          width: 30.w,
-                                          height: 30.w,
+                                          width: size.width * 0.08,
+                                          height: size.width * 0.08,
                                           child: Stack(
                                             alignment: Alignment.center,
                                             children: [
@@ -881,12 +1042,12 @@ class PageMakerCharacter extends StatelessWidget {
                                             ],
                                           ),
                                         ),
-                                        SizedBox(height: 4.h),
+                                        SizedBox(height: size.height * 0.005),
                                         Text(
                                           "Part ${index + 1}",
                                           style: TextStyle(
                                             color: Colors.white,
-                                            fontSize: 12.sp,
+                                            fontSize: size.width * 0.032,
                                             fontWeight: isSelected
                                                 ? FontWeight.bold
                                                 : FontWeight.normal,
@@ -912,7 +1073,7 @@ class PageMakerCharacter extends StatelessWidget {
     );
   }
 
-  Widget _buildItemsGrid() {
+  Widget _buildItemsGrid(Size size) {
     return AnimationLimiter(
       child: Obx(() {
         final listItemMaker = controller.assetRepo.listItemMaker;
@@ -921,13 +1082,13 @@ class PageMakerCharacter extends StatelessWidget {
             0;
 
         return GridView.builder(
-          padding: EdgeInsets.all(12.w),
+          padding: EdgeInsets.all(size.width * 0.032),
           physics: BouncingScrollPhysics(),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 4,
             childAspectRatio: 1.0,
-            crossAxisSpacing: 8.w,
-            mainAxisSpacing: 8.w,
+            crossAxisSpacing: size.width * 0.021,
+            mainAxisSpacing: size.width * 0.021,
           ),
           itemCount:
               listItemMaker[controller.partSelected.value].listItem!.length,
@@ -948,7 +1109,7 @@ class PageMakerCharacter extends StatelessWidget {
                     },
                     child: Container(
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12.r),
+                        borderRadius: BorderRadius.circular(size.width * 0.032),
                         color: selectedItem == index
                             ? Color(0xFFFF6CAB).withOpacity(0.6)
                             : Colors.white.withOpacity(0.4),
@@ -958,7 +1119,7 @@ class PageMakerCharacter extends StatelessWidget {
                         ),
                       ),
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(12.r),
+                        borderRadius: BorderRadius.circular(size.width * 0.032),
                         child: BackdropFilter(
                           filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
                           child: Container(
@@ -972,11 +1133,11 @@ class PageMakerCharacter extends StatelessWidget {
                                         .listItem![index]),
                                 if (selectedItem == index)
                                   Positioned(
-                                    top: 5.h,
-                                    right: 5.w,
+                                    top: size.width * 0.013,
+                                    right: size.width * 0.013,
                                     child: Container(
-                                      width: 16.w,
-                                      height: 16.w,
+                                      width: size.width * 0.042,
+                                      height: size.width * 0.042,
                                       decoration: BoxDecoration(
                                         shape: BoxShape.circle,
                                         color: Colors.white,
@@ -985,7 +1146,7 @@ class PageMakerCharacter extends StatelessWidget {
                                         child: Icon(
                                           Icons.check,
                                           color: Color(0xFFFF6CAB),
-                                          size: 12.sp,
+                                          size: size.width * 0.032,
                                         ),
                                       ),
                                     ),
@@ -1019,7 +1180,7 @@ class PageMakerCharacter extends StatelessWidget {
         width: width,
         height: height,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16.r),
+          borderRadius: BorderRadius.circular(width * 0.4),
           gradient: gradient ??
               LinearGradient(
                 begin: Alignment.topLeft,
@@ -1043,7 +1204,7 @@ class PageMakerCharacter extends StatelessWidget {
           ),
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(16.r),
+          borderRadius: BorderRadius.circular(width * 0.4),
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
             child: Container(
@@ -1057,11 +1218,13 @@ class PageMakerCharacter extends StatelessWidget {
   }
 
   void _showLayersBottomSheet(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+
     Get.bottomSheet(
       BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
         child: Container(
-          height: MediaQuery.of(context).size.height * 0.7,
+          height: size.height * 0.7,
           decoration: BoxDecoration(
             color: Colors.transparent,
           ),
@@ -1071,8 +1234,8 @@ class PageMakerCharacter extends StatelessWidget {
               Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(30.r),
-                    topRight: Radius.circular(30.r),
+                    topLeft: Radius.circular(size.width * 0.08),
+                    topRight: Radius.circular(size.width * 0.08),
                   ),
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
@@ -1089,8 +1252,8 @@ class PageMakerCharacter extends StatelessWidget {
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(30.r),
-                    topRight: Radius.circular(30.r),
+                    topLeft: Radius.circular(size.width * 0.08),
+                    topRight: Radius.circular(size.width * 0.08),
                   ),
                   child: BackdropFilter(
                     filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
@@ -1104,9 +1267,10 @@ class PageMakerCharacter extends StatelessWidget {
               // Content
               Column(
                 children: [
-                  _buildDragHandle(),
+                  _buildDragHandle(size),
                   Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20.w),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: size.width * 0.053),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -1114,7 +1278,7 @@ class PageMakerCharacter extends StatelessWidget {
                           "Manage Layers",
                           style: TextStyle(
                             color: Color(0xFF666CFF),
-                            fontSize: 20.sp,
+                            fontSize: size.width * 0.053,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -1128,8 +1292,8 @@ class PageMakerCharacter extends StatelessWidget {
 
                   // Avatar preview with correct positioning
                   Container(
-                    width: 100.w,
-                    height: 100.w,
+                    width: size.width * 0.27,
+                    height: size.width * 0.27,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: Color(0xFFB0A6FF).withOpacity(0.3),
@@ -1143,29 +1307,29 @@ class PageMakerCharacter extends StatelessWidget {
                     ),
                     child: ClipOval(
                       child: Obx(() => Stack(
-                            alignment: Alignment
-                                .bottomCenter, // Important: Bottom alignment
+                            alignment: Alignment.bottomCenter,
                             children: controller.listImageLayer
                                 .map((widget) => widget)
                                 .toList(),
                           )),
                     ),
                   ),
-                  SizedBox(height: 20.h),
+                  SizedBox(height: size.height * 0.025),
 
                   // Divider
                   Container(
-                    margin: EdgeInsets.symmetric(horizontal: 40.w),
-                    height: 1.h,
+                    margin: EdgeInsets.symmetric(horizontal: size.width * 0.11),
+                    height: 1,
                     color: Colors.white.withOpacity(0.5),
                   ),
-                  SizedBox(height: 16.h),
+                  SizedBox(height: size.height * 0.02),
 
                   // Layers list
                   Expanded(
                     child: Obx(() {
                       return ListView.builder(
-                        padding: EdgeInsets.symmetric(horizontal: 20.w),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: size.width * 0.053),
                         itemCount: controller.listImageLayer.length,
                         physics: BouncingScrollPhysics(),
                         itemBuilder: (context, index) {
@@ -1176,8 +1340,9 @@ class PageMakerCharacter extends StatelessWidget {
                               horizontalOffset: 50.0,
                               child: FadeInAnimation(
                                 child: Padding(
-                                  padding: EdgeInsets.only(bottom: 10.h),
-                                  child: _buildLayerTile(index),
+                                  padding: EdgeInsets.only(
+                                      bottom: size.height * 0.012),
+                                  child: _buildLayerTile(index, size),
                                 ),
                               ),
                             ),
@@ -1189,11 +1354,11 @@ class PageMakerCharacter extends StatelessWidget {
 
                   // Done button
                   Padding(
-                    padding: EdgeInsets.all(20.w),
+                    padding: EdgeInsets.all(size.width * 0.053),
                     child: _buildGlassButton(
                       onTap: () => Get.back(),
                       width: double.infinity,
-                      height: 50.h,
+                      height: size.height * 0.062,
                       gradient: LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
@@ -1206,7 +1371,7 @@ class PageMakerCharacter extends StatelessWidget {
                         "Done",
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 16.sp,
+                          fontSize: size.width * 0.042,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -1223,10 +1388,12 @@ class PageMakerCharacter extends StatelessWidget {
     );
   }
 
-  Widget _buildLayerTile(int index) {
+  Widget _buildLayerTile(int index, Size size) {
+    final thumbnailSize = size.width * 0.13;
+
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(size.width * 0.042),
         color: Colors.white.withOpacity(0.4),
         border: Border.all(
           color: Colors.white.withOpacity(0.5),
@@ -1234,20 +1401,20 @@ class PageMakerCharacter extends StatelessWidget {
         ),
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(size.width * 0.042),
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
           child: Container(
             color: Colors.transparent,
-            padding: EdgeInsets.all(10.w),
+            padding: EdgeInsets.all(size.width * 0.027),
             child: Row(
               children: [
-                // Layer thumbnail - using your specified code
+                // Layer thumbnail
                 Container(
-                  width: 50.w,
-                  height: 50.w,
+                  width: thumbnailSize,
+                  height: thumbnailSize,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10.r),
+                    borderRadius: BorderRadius.circular(size.width * 0.027),
                     color: Colors.white.withOpacity(0.2),
                     border: Border.all(
                       color: Colors.white.withOpacity(0.5),
@@ -1255,15 +1422,14 @@ class PageMakerCharacter extends StatelessWidget {
                     ),
                   ),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10.r),
+                    borderRadius: BorderRadius.circular(size.width * 0.027),
                     child: Stack(
-                      alignment: Alignment
-                          .bottomCenter, // Important: Bottom alignment here too
+                      alignment: Alignment.bottomCenter,
                       children: [controller.listImageLayer[index]],
                     ),
                   ),
                 ),
-                SizedBox(width: 15.w),
+                SizedBox(width: size.width * 0.04),
 
                 // Layer info
                 Expanded(
@@ -1272,28 +1438,29 @@ class PageMakerCharacter extends StatelessWidget {
                     children: [
                       Container(
                         padding: EdgeInsets.symmetric(
-                          horizontal: 8.w,
-                          vertical: 3.h,
+                          horizontal: size.width * 0.021,
+                          vertical: size.height * 0.004,
                         ),
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8.r),
+                          borderRadius:
+                              BorderRadius.circular(size.width * 0.021),
                           color: Color(0xFFB0A6FF).withOpacity(0.4),
                         ),
                         child: Text(
                           "Layer ${index + 1}",
                           style: TextStyle(
                             color: Color(0xFF666CFF),
-                            fontSize: 12.sp,
+                            fontSize: size.width * 0.032,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
-                      SizedBox(height: 5.h),
+                      SizedBox(height: size.height * 0.006),
                       Text(
                         "Part ${index + 1} Component",
                         style: TextStyle(
                           color: Color(0xFF666CFF).withOpacity(0.8),
-                          fontSize: 13.sp,
+                          fontSize: size.width * 0.034,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -1310,7 +1477,7 @@ class PageMakerCharacter extends StatelessWidget {
                   icon: Icon(
                     Icons.delete_outline_rounded,
                     color: Color(0xFFFF6CAB),
-                    size: 22.sp,
+                    size: size.width * 0.058,
                   ),
                 ),
               ],
@@ -1322,11 +1489,13 @@ class PageMakerCharacter extends StatelessWidget {
   }
 
   void _showHelpDialog(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+
     Get.bottomSheet(
       BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
         child: Container(
-          padding: EdgeInsets.all(20.w),
+          padding: EdgeInsets.all(size.width * 0.053),
           decoration: BoxDecoration(
             color: Colors.transparent,
           ),
@@ -1336,8 +1505,8 @@ class PageMakerCharacter extends StatelessWidget {
               Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(30.r),
-                    topRight: Radius.circular(30.r),
+                    topLeft: Radius.circular(size.width * 0.08),
+                    topRight: Radius.circular(size.width * 0.08),
                   ),
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
@@ -1354,8 +1523,8 @@ class PageMakerCharacter extends StatelessWidget {
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(30.r),
-                    topRight: Radius.circular(30.r),
+                    topLeft: Radius.circular(size.width * 0.08),
+                    topRight: Radius.circular(size.width * 0.08),
                   ),
                   child: BackdropFilter(
                     filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
@@ -1370,15 +1539,15 @@ class PageMakerCharacter extends StatelessWidget {
               Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  _buildDragHandle(),
-                  SizedBox(height: 10.h),
+                  _buildDragHandle(size),
+                  SizedBox(height: size.height * 0.012),
 
                   // Title with icon
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Container(
-                        padding: EdgeInsets.all(10.w),
+                        padding: EdgeInsets.all(size.width * 0.027),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: Color(0xFFB0A6FF).withOpacity(0.4),
@@ -1386,21 +1555,21 @@ class PageMakerCharacter extends StatelessWidget {
                         child: Icon(
                           Icons.emoji_objects_rounded,
                           color: Color(0xFF666CFF),
-                          size: 24.sp,
+                          size: size.width * 0.064,
                         ),
                       ),
-                      SizedBox(width: 10.w),
+                      SizedBox(width: size.width * 0.027),
                       Text(
                         "How To Play",
                         style: TextStyle(
                           color: Color(0xFF666CFF),
-                          fontSize: 22.sp,
+                          fontSize: size.width * 0.058,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                     ],
                   ),
-                  SizedBox(height: 25.h),
+                  SizedBox(height: size.height * 0.03),
 
                   // Instructions
                   AnimationLimiter(
@@ -1417,36 +1586,40 @@ class PageMakerCharacter extends StatelessWidget {
                             title: "Choose Category",
                             description: "Select different parts to customize",
                             color: Color(0xFF84CAFF),
+                            size: size,
                           ),
                           _buildHelpItem(
                             icon: Icons.grid_view_rounded,
                             title: "Select Items",
                             description: "Tap on items to add to your avatar",
                             color: Color(0xFFB0A6FF),
+                            size: size,
                           ),
                           _buildHelpItem(
                             icon: Icons.more_vert,
                             title: "Menu Options",
                             description: "Tap menu for more features",
                             color: Color(0xFFFF89B3),
+                            size: size,
                           ),
                           _buildHelpItem(
                             icon: Icons.camera_alt_rounded,
                             title: "Save Avatar",
                             description: "Capture and save your creation",
                             color: Color(0xFFFF6CAB),
+                            size: size,
                           ),
                         ],
                       ),
                     ),
                   ),
-                  SizedBox(height: 25.h),
+                  SizedBox(height: size.height * 0.03),
 
                   // Got it button
                   _buildGlassButton(
                     onTap: () => Get.back(),
                     width: double.infinity,
-                    height: 50.h,
+                    height: size.height * 0.062,
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
@@ -1459,7 +1632,7 @@ class PageMakerCharacter extends StatelessWidget {
                       "Got it!",
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 16.sp,
+                        fontSize: size.width * 0.042,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -1480,17 +1653,20 @@ class PageMakerCharacter extends StatelessWidget {
     required String title,
     required String description,
     required Color color,
+    required Size size,
   }) {
+    final iconSize = size.width * 0.12;
+
     return Container(
-      margin: EdgeInsets.only(bottom: 16.h),
+      margin: EdgeInsets.only(bottom: size.height * 0.02),
       child: Row(
         children: [
           // Icon with glass effect
           Container(
-            width: 45.w,
-            height: 45.w,
+            width: iconSize,
+            height: iconSize,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12.r),
+              borderRadius: BorderRadius.circular(size.width * 0.032),
               color: color.withOpacity(0.5),
               border: Border.all(
                 color: Colors.white.withOpacity(0.5),
@@ -1498,7 +1674,7 @@ class PageMakerCharacter extends StatelessWidget {
               ),
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(12.r),
+              borderRadius: BorderRadius.circular(size.width * 0.032),
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
                 child: Container(
@@ -1507,14 +1683,14 @@ class PageMakerCharacter extends StatelessWidget {
                     child: Icon(
                       icon,
                       color: Colors.white,
-                      size: 22.sp,
+                      size: size.width * 0.058,
                     ),
                   ),
                 ),
               ),
             ),
           ),
-          SizedBox(width: 15.w),
+          SizedBox(width: size.width * 0.04),
 
           // Text content
           Expanded(
@@ -1525,16 +1701,16 @@ class PageMakerCharacter extends StatelessWidget {
                   title,
                   style: TextStyle(
                     color: Color(0xFF666CFF),
-                    fontSize: 16.sp,
+                    fontSize: size.width * 0.042,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                SizedBox(height: 4.h),
+                SizedBox(height: size.height * 0.005),
                 Text(
                   description,
                   style: TextStyle(
                     color: Color(0xFF666CFF).withOpacity(0.7),
-                    fontSize: 14.sp,
+                    fontSize: size.width * 0.037,
                   ),
                 ),
               ],
@@ -1543,5 +1719,39 @@ class PageMakerCharacter extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+// Bubble class for animated bubbles
+class Bubble {
+  double? size;
+  double? position;
+  double? opacity;
+  double? offset;
+  double? waveWidth;
+  double? curve;
+  Color? color;
+
+  Bubble() {
+    final random = Random();
+
+    // Random properties for variety
+    size = 5 + random.nextDouble() * 15;
+    position = random.nextDouble();
+    opacity = 0.3 + random.nextDouble() * 0.3;
+    offset = random.nextDouble();
+    waveWidth = 10 + random.nextDouble() * 20;
+    curve = 0.5 + random.nextDouble();
+
+    // Random color from a pastel palette
+    final colors = [
+      Color(0xFFFA9ECC), // Pink
+      Color(0xFF9F6CF7), // Purple
+      Color(0xFF84CAFF), // Blue
+      Color(0xFFFFB347), // Orange
+      Color(0xFF9387FF), // Lavender
+    ];
+
+    color = colors[random.nextInt(colors.length)];
   }
 }

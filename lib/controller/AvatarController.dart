@@ -1,167 +1,132 @@
-import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
+
 import 'package:get/get.dart';
-import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:get/get.dart';
 
 class SaveAvatarController extends GetxController {
+  // List of saved avatars
   RxList<List<String>> listAvatar = <List<String>>[].obs;
-  SharedPreferences? _prefs;
-  final RxBool isLoading = false.obs;
 
-  // Untuk menyimpan avatar yang sedang diedit
+  // Current editing state
+  RxInt editingIndex = (-1).obs;
   RxList<String> currentEditingAvatar = <String>[].obs;
-  RxInt editingIndex = RxInt(-1);
+
+  // Storage key
+  final String _storageKey = 'saved_avatars';
 
   @override
   void onInit() {
     super.onInit();
-    loadDataFromSharedPreferences();
+    loadAvatarsFromStorage();
   }
 
-  Future<void> loadDataFromSharedPreferences() async {
+  // Load avatars from SharedPreferences
+  Future<void> loadAvatarsFromStorage() async {
     try {
-      isLoading.value = true;
-      _prefs = await SharedPreferences.getInstance();
-      final avatarData = _prefs!.getStringList('avatar_data');
-      print("Load preferences successful");
+      final prefs = await SharedPreferences.getInstance();
+      final savedAvatarsJson = prefs.getString(_storageKey);
 
-      if (avatarData != null) {
-        listAvatar.value = avatarData.map((item) => item.split(',')).toList();
-        update();
+      if (savedAvatarsJson != null) {
+        final List<dynamic> decoded = jsonDecode(savedAvatarsJson);
+
+        // Convert the dynamic list to the correct format
+        listAvatar.value = decoded.map((item) {
+          return List<String>.from(item);
+        }).toList();
+
+        print("Loaded ${listAvatar.length} avatars from storage");
       }
-    } catch (error) {
-      print("Error in loadDataFromSharedPreferences: $error");
-      Get.snackbar(
-        "Error Loading Data",
-        "There was a problem loading your saved avatars.",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red[100],
-        colorText: Colors.red[800],
-      );
-    } finally {
-      isLoading.value = false;
+    } catch (e) {
+      print('Error loading avatars: $e');
     }
   }
 
-  Future<void> saveAvatar(List<String> avatar) async {
+  // Save avatars to SharedPreferences
+  Future<void> saveAvatarsToStorage() async {
     try {
-      // Log all asset paths for debugging
-      avatar.forEach((element) {
-        print("Asset path: $element");
-      });
-
-      // Add new avatar to the list
-      listAvatar.add(avatar);
-      update();
-
-      print("Total avatars: ${listAvatar.length}");
-
-      // Convert list to format suitable for SharedPreferences
-      final avatarData = listAvatar.map((item) => item.join(',')).toList();
-
-      // Store in SharedPreferences
-      _prefs ??= await SharedPreferences.getInstance();
-      await _prefs!.setStringList('avatar_data', avatarData);
-
-      Get.snackbar(
-        "Avatar Saved",
-        "Your avatar has been saved successfully!",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green[100],
-        colorText: Colors.green[800],
-        duration: Duration(seconds: 2),
-      );
-    } catch (error) {
-      print("Error in saveAvatar: $error");
-      Get.snackbar(
-        "Save Failed",
-        "There was a problem saving your avatar.",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red[100],
-        colorText: Colors.red[800],
-      );
+      final prefs = await SharedPreferences.getInstance();
+      final encodedData = jsonEncode(listAvatar.toList());
+      await prefs.setString(_storageKey, encodedData);
+      print("Saved ${listAvatar.length} avatars to storage");
+    } catch (e) {
+      print('Error saving avatars: $e');
     }
   }
 
-  Future<void> deleteAvatar(int index) async {
-    try {
-      if (index >= 0 && index < listAvatar.length) {
-        listAvatar.removeAt(index);
-        update();
+  // Save a new avatar
+  Future<void> saveAvatar(List<String> avatarLayers) async {
+    // Add the new avatar to the list
+    listAvatar.add(List<String>.from(avatarLayers));
+    print("New avatar saved, total count: ${listAvatar.length}");
 
-        final avatarData = listAvatar.map((item) => item.join(',')).toList();
-        _prefs ??= await SharedPreferences.getInstance();
-        await _prefs!.setStringList('avatar_data', avatarData);
-
-        Get.snackbar(
-          "Avatar Deleted",
-          "Your avatar has been deleted successfully!",
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.blue[100],
-          colorText: Colors.blue[800],
-          duration: Duration(seconds: 2),
-        );
-      }
-    } catch (error) {
-      print("Error in deleteAvatar: $error");
-      Get.snackbar(
-        "Delete Failed",
-        "There was a problem deleting your avatar.",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red[100],
-        colorText: Colors.red[800],
-      );
-    }
+    // Save to storage
+    await saveAvatarsToStorage();
   }
 
-  // Fungsi untuk update avatar yang sedang diedit
+  // Update an existing avatar
   Future<void> updateAvatarAtIndex(
-      int index, List<String> updatedAvatar) async {
-    try {
-      if (index >= 0 && index < listAvatar.length) {
-        listAvatar[index] = updatedAvatar;
-        update();
+      int index, List<String> updatedLayers) async {
+    if (index >= 0 && index < listAvatar.length) {
+      print("Updating avatar at index $index");
+      listAvatar[index] = List<String>.from(updatedLayers);
 
-        final avatarData = listAvatar.map((item) => item.join(',')).toList();
-        _prefs ??= await SharedPreferences.getInstance();
-        await _prefs!.setStringList('avatar_data', avatarData);
+      // Reset editing state
+      editingIndex.value = -1;
+      currentEditingAvatar.clear();
 
-        Get.snackbar(
-          "Avatar Updated",
-          "Your avatar has been updated successfully!",
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.blue[100],
-          colorText: Colors.blue[800],
-          duration: Duration(seconds: 2),
-        );
-      }
-    } catch (error) {
-      print("Error in updateAvatarAtIndex: $error");
-      Get.snackbar(
-        "Update Failed",
-        "There was a problem updating your avatar.",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red[100],
-        colorText: Colors.red[800],
-      );
+      // Save to storage
+      await saveAvatarsToStorage();
+    } else {
+      print(
+          "Error: Cannot update avatar at index $index, only ${listAvatar.length} avatars exist");
     }
   }
 
-  // Fungsi untuk memuat avatar untuk diedit
+  // Prepare avatar for editing
   void loadAvatarForEditing(int index) {
     if (index >= 0 && index < listAvatar.length) {
-      currentEditingAvatar.value = List<String>.from(listAvatar[index]);
+      print("Setting up avatar at index $index for editing");
+
+      // Set the editing index
       editingIndex.value = index;
-      update();
+
+      // Make a copy of the avatar to edit
+      currentEditingAvatar.value = List<String>.from(listAvatar[index]);
+
+      print("Editing avatar with ${currentEditingAvatar.length} layers");
+    } else {
+      print(
+          "Error: Cannot edit avatar at index $index, only ${listAvatar.length} avatars exist");
     }
   }
 
-  // Fungsi untuk membatalkan pengeditan
-  void cancelEditing() {
-    currentEditingAvatar.clear();
+  // Delete an avatar
+  Future<void> deleteAvatar(int index) async {
+    if (index >= 0 && index < listAvatar.length) {
+      print("Deleting avatar at index $index");
+      listAvatar.removeAt(index);
+
+      // If we were editing this avatar, reset editing state
+      if (editingIndex.value == index) {
+        editingIndex.value = -1;
+        currentEditingAvatar.clear();
+      } else if (editingIndex.value > index) {
+        // Adjust the editing index if we deleted an avatar before it
+        editingIndex.value--;
+      }
+
+      // Save to storage
+      await saveAvatarsToStorage();
+    } else {
+      print(
+          "Error: Cannot delete avatar at index $index, only ${listAvatar.length} avatars exist");
+    }
+  }
+
+  // Clear editing state
+  void clearEditingState() {
     editingIndex.value = -1;
-    update();
+    currentEditingAvatar.clear();
+    print("Cleared editing state");
   }
 }

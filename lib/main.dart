@@ -1,15 +1,14 @@
 import 'package:avatar_maker/controller/AvatarController.dart';
 import 'package:avatar_maker/page/PageBase.dart';
 import 'package:avatar_maker/page/intro/PageIntroGame.dart';
-import 'package:avatar_maker/page/testplay.dart';
-
+import 'package:avatar_maker/page/repo/AssetRepo.dart';
+import 'package:avatar_maker/page/viewcharacter/PageViewCharacter.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'page/maker/PageMakerCharacter.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 void main() {
   runApp(const MainApp());
@@ -38,7 +37,8 @@ class MainApp extends StatelessWidget {
     requestPermissions();
     final saveController = Get.put(SaveAvatarController());
     final avatarController = Get.put(AvatarController());
-
+    final repoController = Get.put(AssetRepo());
+    final makerCharacter = Get.put(PageMakerCharacterController());
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       initialRoute: PageIntroGame.routeName,
@@ -52,6 +52,8 @@ class MainApp extends StatelessWidget {
         GetPage(
             name: PageMakerCharacter.routeName.toString(),
             page: () => PageMakerCharacter()),
+        GetPage(
+            name: AvatarHistoryPage.routeName, page: () => AvatarHistoryPage())
       ],
     );
   }
