@@ -129,7 +129,8 @@ class MainApp extends StatelessWidget {
     final rewardsController = Get.put(RewardsController());
     final shopController = Get.put(ShopController());
     final achievementController = Get.put(AchievementController());
-
+    final saveController = Get.put(SaveAvatarController());
+    final makerCharacter = Get.put(PageMakerCharacterController());
     return GetMaterialApp(
       title: 'Anime Avatar Maker',
       theme: ThemeData(

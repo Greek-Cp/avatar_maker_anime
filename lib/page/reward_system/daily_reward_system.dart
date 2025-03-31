@@ -1,9 +1,10 @@
 import 'dart:math';
+
 import 'package:avatar_maker/page/repo/AssetRepo.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // Rewards System Controller
 class RewardsController extends GetxController {
@@ -271,9 +272,9 @@ class DailyReward {
 
 // Daily Login Rewards UI
 class DailyRewardsPage extends StatelessWidget {
-  final rewardsController = Get.find<RewardsController>();
+  static String routeName = "/dailyRewardPage";
 
-  static var routeName;
+  final rewardsController = Get.find<RewardsController>();
 
   @override
   Widget build(BuildContext context) {

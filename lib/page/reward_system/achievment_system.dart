@@ -1,8 +1,8 @@
+import 'dart:convert';
+
 import 'package:avatar_maker/page/reward_system/daily_reward_system.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'dart:math';
-import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Achievement Model
@@ -366,7 +366,7 @@ class AchievementController extends GetxController {
 class AchievementsPage extends StatelessWidget {
   final achievementController = Get.find<AchievementController>();
 
-  static var routeName;
+  static String routeName = "/AchievementsPage";
 
   @override
   Widget build(BuildContext context) {

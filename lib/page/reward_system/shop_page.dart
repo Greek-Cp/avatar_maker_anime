@@ -10,7 +10,7 @@ class ShopPage extends StatelessWidget {
   final shopController = Get.find<ShopController>();
   final rewardsController = Get.find<RewardsController>();
 
-  static var routeName;
+  static String routeName = "/ShopPage";
 
   @override
   Widget build(BuildContext context) {
