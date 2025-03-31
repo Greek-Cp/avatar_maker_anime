@@ -1,8 +1,13 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:avatar_maker/page/maker/PageMakerCharacter.dart';
 import 'package:avatar_maker/page/repo/AssetRepo.dart';
+import 'package:avatar_maker/page/reward_system/achievment_system.dart';
+import 'package:avatar_maker/page/reward_system/daily_reward_system.dart';
+import 'package:avatar_maker/page/reward_system/model/shop_item.dart';
+import 'package:avatar_maker/page/reward_system/shop_page.dart';
 import 'package:avatar_maker/page/viewcharacter/PageViewCharacter.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -36,6 +41,11 @@ class _PageBaseState extends State<PageBase> with TickerProviderStateMixin {
   final saveAvatarController = Get.put(SaveAvatarController());
   final avatarController = Get.put(AvatarController());
 
+  // Initialize new controllers
+  final rewardsController = Get.put(RewardsController());
+  final shopController = Get.put(ShopController());
+  final achievementController = Get.put(AchievementController());
+
   // Enhanced color palette for kids
   final Color primaryColor = Color(0xFFFA9ECC);
   final Color secondaryColor = Color(0xFFFFC0D9);
@@ -53,18 +63,21 @@ class _PageBaseState extends State<PageBase> with TickerProviderStateMixin {
   // Colors for nav items
   late List<Color> navColors;
 
+  // Timer for checking daily rewards
+  Timer? _dailyRewardTimer;
+
   @override
   void initState() {
     super.initState();
 
     repoController.updateRepo();
 
-    // Initialize pages
+    // Updated pages with real implementations instead of "Coming Soon"
     listPage = [
       PageMakerCharacter(),
       SafeArea(child: AvatarHistoryPage()),
-      SafeArea(child: PageComingSoon("Magic Shop")),
-      SafeArea(child: PageComingSoon("Fun Games")),
+      SafeArea(child: ShopPage()),
+      SafeArea(child: AchievementsPage()),
     ];
 
     // Setup animation controllers
@@ -90,6 +103,145 @@ class _PageBaseState extends State<PageBase> with TickerProviderStateMixin {
       blueColor,
       orangeColor,
     ];
+
+    // Track login for achievements and check daily rewards
+    _trackLogin();
+    _checkDailyRewards();
+
+    // Set up a timer to periodically check if daily rewards can be claimed
+    // This is useful if the app stays open past midnight
+    _dailyRewardTimer = Timer.periodic(Duration(minutes: 30), (timer) {
+      _checkDailyRewards();
+    });
+  }
+
+  Future<void> _trackLogin() async {
+    // Track login for achievements
+    await achievementController.trackLogin();
+  }
+
+  Future<void> _checkDailyRewards() async {
+    await rewardsController.loadRewardsData();
+
+    // Show daily reward popup if it can be claimed
+    if (rewardsController.canClaimToday.value) {
+      // Wait a bit before showing the dialog to let the app initialize properly
+      Future.delayed(Duration(seconds: 1), () {
+        _showDailyRewardDialog();
+      });
+    }
+  }
+
+  void _showDailyRewardDialog() {
+    // Only show if the app is in foreground and initialized
+    if (WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed) {
+      Get.dialog(
+        Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Container(
+            padding: EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header icon
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      colors: [
+                        orangeColor,
+                        primaryColor,
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                  ),
+                  child: Icon(
+                    Icons.calendar_today_rounded,
+                    color: Colors.white,
+                    size: 40,
+                  ),
+                ),
+
+                SizedBox(height: 20),
+
+                // Title
+                Text(
+                  "Daily Reward Available!",
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: accentColor,
+                  ),
+                ),
+
+                SizedBox(height: 15),
+
+                // Description
+                Text(
+                  "Come back daily to collect coins and special items!",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey[600],
+                  ),
+                ),
+
+                SizedBox(height: 25),
+
+                // Buttons
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        Get.back();
+                        Get.to(() => DailyRewardsPage());
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: accentColor,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 25, vertical: 12),
+                      ),
+                      child: Text(
+                        "Claim Now",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 15),
+                    TextButton(
+                      onPressed: () => Get.back(),
+                      child: Text(
+                        "Later",
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
   }
 
   @override
@@ -97,6 +249,7 @@ class _PageBaseState extends State<PageBase> with TickerProviderStateMixin {
     _bounceController.dispose();
     _rotationController.dispose();
     _scaleController.dispose();
+    _dailyRewardTimer?.cancel();
     super.dispose();
   }
 
@@ -206,8 +359,10 @@ class _PageBaseState extends State<PageBase> with TickerProviderStateMixin {
                                 color: navColors[2],
                               )),
                           Obx(() => _buildAnimatedNavItem(
-                                icon: Icons.sports_esports_rounded,
-                                label: "Games",
+                                icon: Icons
+                                    .emoji_events_rounded, // Changed to trophy icon for achievements
+                                label:
+                                    "Rewards", // Changed label from "Games" to "Rewards"
                                 isActive: tabController.selectedTab.value == 3,
                                 index: 3,
                                 color: navColors[3],
@@ -282,6 +437,51 @@ class _PageBaseState extends State<PageBase> with TickerProviderStateMixin {
     required int index,
     required Color color,
   }) {
+    // Add notification badges for daily rewards and achievements
+    Widget? badge;
+
+    if (index == 2 && rewardsController.canClaimToday.value) {
+      // Shop tab with daily reward notification
+      badge = Positioned(
+        top: 0,
+        right: 0,
+        child: Container(
+          padding: EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: Colors.red,
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            Icons.star,
+            color: Colors.white,
+            size: 8,
+          ),
+        ),
+      );
+    } else if (index == 3 &&
+        achievementController.newAchievementCount.value > 0) {
+      // Achievements tab with new achievements count
+      badge = Positioned(
+        top: 0,
+        right: 0,
+        child: Container(
+          padding: EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: Colors.red,
+            shape: BoxShape.circle,
+          ),
+          child: Text(
+            "${achievementController.newAchievementCount.value}",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 8,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      );
+    }
+
     // Create spring animation for the bounce effect
     final Animation<double> bounceAnimation = CurvedAnimation(
       parent: _bounceController,
@@ -314,81 +514,88 @@ class _PageBaseState extends State<PageBase> with TickerProviderStateMixin {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   // Icon with background bubble
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          color.withOpacity(isActive ? 0.8 : 0.3),
-                          color.withOpacity(isActive ? 0.6 : 0.1),
-                        ],
-                      ),
-                      boxShadow: isActive
-                          ? [
-                              BoxShadow(
-                                color: color.withOpacity(0.5),
-                                blurRadius: 15,
-                                spreadRadius: 1,
-                                offset: Offset(0, 5),
-                              ),
-                              BoxShadow(
-                                color: Colors.white,
-                                blurRadius: 8,
-                                spreadRadius: -2,
-                                offset: Offset(-2, -2),
-                              ),
-                            ]
-                          : [],
-                    ),
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        // Add sparkles for active item
-                        if (isActive)
-                          ...List.generate(4, (i) {
-                            final angle = i * (math.pi / 2);
-                            final distance = 22.0;
-                            return Positioned(
-                              left: 22 +
-                                  math.cos(angle +
-                                          _rotationController.value *
-                                              math.pi *
-                                              2) *
-                                      distance *
-                                      0.3,
-                              top: 22 +
-                                  math.sin(angle +
-                                          _rotationController.value *
-                                              math.pi *
-                                              2) *
-                                      distance *
-                                      0.3,
-                              child: Opacity(
-                                opacity: 0.6,
-                                child: Container(
-                                  width: 4,
-                                  height: 4,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.white,
+                  Stack(
+                    children: [
+                      Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              color.withOpacity(isActive ? 0.8 : 0.3),
+                              color.withOpacity(isActive ? 0.6 : 0.1),
+                            ],
+                          ),
+                          boxShadow: isActive
+                              ? [
+                                  BoxShadow(
+                                    color: color.withOpacity(0.5),
+                                    blurRadius: 15,
+                                    spreadRadius: 1,
+                                    offset: Offset(0, 5),
                                   ),
-                                ),
-                              ),
-                            );
-                          }),
-
-                        // Icon
-                        Icon(
-                          icon,
-                          color: Colors.white,
-                          size: isActive ? 26 : 22,
+                                  BoxShadow(
+                                    color: Colors.white,
+                                    blurRadius: 8,
+                                    spreadRadius: -2,
+                                    offset: Offset(-2, -2),
+                                  ),
+                                ]
+                              : [],
                         ),
-                      ],
-                    ),
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            // Add sparkles for active item
+                            if (isActive)
+                              ...List.generate(4, (i) {
+                                final angle = i * (math.pi / 2);
+                                final distance = 22.0;
+                                return Positioned(
+                                  left: 22 +
+                                      math.cos(angle +
+                                              _rotationController.value *
+                                                  math.pi *
+                                                  2) *
+                                          distance *
+                                          0.3,
+                                  top: 22 +
+                                      math.sin(angle +
+                                              _rotationController.value *
+                                                  math.pi *
+                                                  2) *
+                                          distance *
+                                          0.3,
+                                  child: Opacity(
+                                    opacity: 0.6,
+                                    child: Container(
+                                      width: 4,
+                                      height: 4,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }),
+
+                            // Icon
+                            Icon(
+                              icon,
+                              color: Colors.white,
+                              size: isActive ? 26 : 22,
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Add the badge if needed
+                      if (badge != null) badge,
+                    ],
                   ),
 
                   SizedBox(height: 4),
@@ -432,7 +639,7 @@ class _PageBaseState extends State<PageBase> with TickerProviderStateMixin {
   }
 }
 
-// Add BubblePainter class if it's not defined elsewhere
+// BubblePainter class remains unchanged
 class BubblePainter extends CustomPainter {
   final List<Offset> dotPositions;
   final List<Color> colors;
@@ -462,281 +669,5 @@ class BubblePainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
     return false;
-  }
-}
-
-// Coming Soon Page with fun animated elements for kids
-class PageComingSoon extends StatefulWidget {
-  final String featureName;
-
-  PageComingSoon(this.featureName);
-
-  @override
-  State<PageComingSoon> createState() => _PageComingSoonState();
-}
-
-class _PageComingSoonState extends State<PageComingSoon>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-
-  @override
-  void initState() {
-    super.initState();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: 2000),
-    )..repeat(reverse: true);
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-    final height = MediaQuery.of(context).size.height;
-
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFFDAD7FF),
-            Color(0xFFFFE0F3),
-          ],
-        ),
-      ),
-      child: Stack(
-        children: [
-          // Animated background elements
-          ..._buildBackgroundElements(width, height),
-
-          // Main content
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Animated icon container
-                AnimatedBuilder(
-                  animation: _animationController,
-                  builder: (context, child) {
-                    return Transform.translate(
-                      offset: Offset(0,
-                          math.sin(_animationController.value * math.pi) * 10),
-                      child: Container(
-                        width: width * 0.4,
-                        height: width * 0.4,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              _getColorForFeature(widget.featureName)
-                                  .withOpacity(0.7),
-                              _getColorForFeature(widget.featureName)
-                                  .withOpacity(0.3),
-                            ],
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: _getColorForFeature(widget.featureName)
-                                  .withOpacity(0.5),
-                              blurRadius: 25,
-                              spreadRadius: 5,
-                              offset: Offset(0, 10),
-                            ),
-                            BoxShadow(
-                              color: Colors.white.withOpacity(0.8),
-                              blurRadius: 20,
-                              spreadRadius: -5,
-                              offset: Offset(-10, -10),
-                            ),
-                          ],
-                        ),
-                        child: Center(
-                          child: Icon(
-                            _getIconForFeature(widget.featureName),
-                            color: Colors.white,
-                            size: width * 0.2,
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                SizedBox(height: 40),
-
-                // Animated title
-                ShaderMask(
-                  shaderCallback: (bounds) => LinearGradient(
-                    colors: [
-                      _getColorForFeature(widget.featureName),
-                      Color(0xFFFF6CAB),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ).createShader(bounds),
-                  child: Text(
-                    widget.featureName,
-                    style: TextStyle(
-                      fontSize: width * 0.08,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-
-                SizedBox(height: 12),
-
-                // Subtitle with animated container
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.3),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.5),
-                      width: 1.5,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: _getColorForFeature(widget.featureName)
-                            .withOpacity(0.3),
-                        blurRadius: 15,
-                        offset: Offset(0, 5),
-                      ),
-                    ],
-                  ),
-                  child: Text(
-                    "Coming Soon!",
-                    style: TextStyle(
-                      color: Color(0xFFAA336A),
-                      fontSize: width * 0.05,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-
-                SizedBox(height: 25),
-
-                // Description
-                Container(
-                  width: width * 0.8,
-                  padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: Text(
-                    _getDescriptionForFeature(widget.featureName),
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Color(0xFF4A4A4A),
-                      fontSize: width * 0.04,
-                      height: 1.5,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  List<Widget> _buildBackgroundElements(double width, double height) {
-    return List.generate(15, (index) {
-      final random = math.Random(index * 3);
-      final size = (width * 0.04) + random.nextDouble() * (width * 0.06);
-      final xPos = random.nextDouble() * width;
-      final yPos = random.nextDouble() * height;
-      final opacity = 0.1 + random.nextDouble() * 0.2;
-
-      return Positioned(
-        left: xPos,
-        top: yPos,
-        child: AnimatedBuilder(
-          animation: _animationController,
-          builder: (context, child) {
-            final animValue = math
-                .sin((_animationController.value * math.pi * 2) + (index / 3));
-            final moveX =
-                math.cos(_animationController.value * math.pi + index) * 10;
-            final moveY =
-                math.sin(_animationController.value * math.pi + index) * 10;
-
-            return Transform.translate(
-              offset: Offset(moveX, moveY),
-              child: Opacity(
-                opacity: (opacity + animValue * 0.1).clamp(0.05, 0.3),
-                child: Container(
-                  width: size,
-                  height: size,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: _getColorForFeature(widget.featureName),
-                    boxShadow: [
-                      BoxShadow(
-                        color: _getColorForFeature(widget.featureName)
-                            .withOpacity(0.5),
-                        blurRadius: 10,
-                        spreadRadius: 2,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          },
-        ),
-      );
-    });
-  }
-
-  IconData _getIconForFeature(String feature) {
-    switch (feature.toLowerCase()) {
-      case 'magic shop':
-        return Icons.shopping_bag_rounded;
-      case 'fun games':
-        return Icons.sports_esports_rounded;
-      case 'community':
-        return Icons.people_rounded;
-      case 'settings':
-        return Icons.settings_rounded;
-      default:
-        return Icons.star_rounded;
-    }
-  }
-
-  Color _getColorForFeature(String feature) {
-    switch (feature.toLowerCase()) {
-      case 'magic shop':
-        return Color(0xFF9F6CF7); // Purple
-      case 'fun games':
-        return Color(0xFF5EBAF2); // Blue
-      case 'community':
-        return Color(0xFFFF8C9F); // Pink
-      case 'settings':
-        return Color(0xFFFFB347); // Orange
-      default:
-        return Color(0xFFFA9ECC); // Default pink
-    }
-  }
-
-  String _getDescriptionForFeature(String feature) {
-    switch (feature.toLowerCase()) {
-      case 'magic shop':
-        return "Get ready to discover magical items, outfits and special powers for your avatars! The Magic Shop will be filled with wonderful surprises.";
-      case 'fun games':
-        return "Play exciting mini-games with your avatars! Challenge friends, win prizes, and have tons of fun in our upcoming games section.";
-      case 'community':
-        return "Share your avatars with friends, join events, and see what others are creating in our friendly community space!";
-      case 'settings':
-        return "Customize your experience, change themes, and make everything just the way you like it with our upcoming settings options.";
-      default:
-        return "We're working on something special just for you! Stay tuned for amazing new features coming soon.";
-    }
   }
 }
