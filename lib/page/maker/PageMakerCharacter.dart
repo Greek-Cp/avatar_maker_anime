@@ -6,6 +6,8 @@ import 'dart:ui';
 
 import 'package:avatar_maker/controller/AvatarController.dart';
 import 'package:avatar_maker/page/repo/AssetRepo.dart';
+import 'package:avatar_maker/page/reward_system/achievment_system.dart';
+import 'package:avatar_maker/page/reward_system/model/shop_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -80,6 +82,9 @@ class PageMakerCharacterController extends GetxController
   final saveAvatarController = Get.find<SaveAvatarController>();
   final avatarController = Get.find<AvatarController>();
 
+  // Add reference to shop controller
+  late ShopController shopController;
+
   // Reactive state variables
   final RxInt partSelected = 0.obs;
   final RxInt itemSelected = 0.obs;
@@ -90,8 +95,11 @@ class PageMakerCharacterController extends GetxController
   final RxInt editingIndex = (-1).obs;
   final RxBool isLoading = false.obs;
 
-  // Map untuk menyimpan item yang dipilih untuk setiap kategori
+  // Map to store selected items for each category
   final RxMap<int, int> selectedItemsPerCategory = <int, int>{}.obs;
+
+  // New map to track locked status of items
+  final RxMap<String, bool> lockedItems = <String, bool>{}.obs;
 
   // Animation controller
   late AnimationController animationController;
@@ -112,6 +120,14 @@ class PageMakerCharacterController extends GetxController
 
     print("PageMakerCharacterController: onInit called");
 
+    // Initialize shop controller reference
+    try {
+      shopController = Get.find<ShopController>();
+    } catch (e) {
+      // If shop controller is not initialized yet, create it
+      shopController = Get.put(ShopController());
+    }
+
     // Setup animation controller
     animationController = AnimationController(
       vsync: this,
@@ -123,6 +139,9 @@ class PageMakerCharacterController extends GetxController
     for (int i = 0; i < itemMakerLength; i++) {
       selectedItemsPerCategory[i] = 0;
     }
+
+    // Initialize locked items
+    _initializeLockedItems();
 
     // Check if editing mode - pull data from SaveAvatarController
     print(
@@ -168,6 +187,283 @@ class PageMakerCharacterController extends GetxController
     }
   }
 
+  // Initialize locked items
+  void _initializeLockedItems() {
+    // First clear any existing data
+    lockedItems.clear();
+
+    try {
+      // Iterate through all assets in the repo
+      for (int categoryIndex = 0;
+          categoryIndex < assetRepo.listItemMaker.length;
+          categoryIndex++) {
+        final category = assetRepo.listItemMaker[categoryIndex];
+
+        if (category.listItem != null) {
+          for (int itemIndex = 0;
+              itemIndex < category.listItem!.length;
+              itemIndex++) {
+            final assetPath = category.listItem![itemIndex];
+
+            // Skip the first item in each category (always free)
+            if (itemIndex == 0) {
+              lockedItems[assetPath] = false;
+              continue;
+            }
+
+            // Determine if this item should be locked based on some rules
+            // For example: Lock every third item starting from index 2
+            final shouldLock = (itemIndex) % 3 == 2;
+
+            // Check if the item is already owned
+            final isOwned = shopController
+                .userOwnsItem("asset_${categoryIndex}_${itemIndex}");
+
+            // If owned, it's not locked; otherwise use the locking rule
+            lockedItems[assetPath] = shouldLock && !isOwned;
+          }
+        }
+      }
+    } catch (e) {
+      print("Error initializing locked items: $e");
+    }
+  }
+
+  // Check if an item is locked
+  bool isItemLocked(int categoryIndex, int itemIndex) {
+    try {
+      final assetPath =
+          assetRepo.listItemMaker[categoryIndex].listItem![itemIndex];
+      return lockedItems[assetPath] ?? false;
+    } catch (e) {
+      print("Error checking if item is locked: $e");
+      return false;
+    }
+  }
+
+  // Generate shop item ID from category and item indices
+  String getShopItemId(int categoryIndex, int itemIndex) {
+    return "asset_${categoryIndex}_${itemIndex}";
+  }
+
+  // Modified selectItem to check for locked status
+  void selectItem(int index) {
+    final listItemMaker = assetRepo.listItemMaker;
+
+    // Check if the item is locked
+    if (isItemLocked(partSelected.value, index)) {
+      // Show locked item dialog
+      _showLockedItemDialog(partSelected.value, index);
+      return;
+    }
+
+    // Item is not locked, proceed as normal
+    // Simpan item yang dipilih untuk kategori saat ini
+    selectedItemsPerCategory[partSelected.value] = index;
+
+    // Update nilai itemSelected untuk highlight di UI
+    itemSelected.value = index;
+
+    // Update layer dan string avatar
+    listAvatarLayerString[partSelected.value] =
+        listItemMaker[partSelected.value].listItem![index].toString();
+
+    listImageLayer[partSelected.value] =
+        Image.asset(listItemMaker[partSelected.value].listItem![index]);
+  }
+
+  // Show locked item dialog
+  void _showLockedItemDialog(int categoryIndex, int itemIndex) {
+    final assetPath =
+        assetRepo.listItemMaker[categoryIndex].listItem![itemIndex];
+    final shopItemId = getShopItemId(categoryIndex, itemIndex);
+
+    // Use Get.dialog to show a custom dialog
+    Get.dialog(
+      Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        backgroundColor: Colors.transparent,
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+          child: Container(
+            padding: EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.white.withOpacity(0.7),
+                  Colors.white.withOpacity(0.4),
+                ],
+              ),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.5),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: accentColor.withOpacity(0.2),
+                  blurRadius: 15,
+                  offset: Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Lock icon
+                Container(
+                  width: 70,
+                  height: 70,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        accentColor.withOpacity(0.7),
+                        accentColor.withOpacity(0.5),
+                      ],
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: accentColor.withOpacity(0.3),
+                        blurRadius: 10,
+                        spreadRadius: 2,
+                        offset: Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    Icons.lock,
+                    color: Colors.white,
+                    size: 35,
+                  ),
+                ),
+
+                SizedBox(height: 20),
+
+                // Item preview
+                Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withOpacity(0.3),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.5),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: ClipOval(
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Image.asset(Part15_class15.asset_0),
+                        Image.asset(assetPath),
+                      ],
+                    ),
+                  ),
+                ),
+
+                SizedBox(height: 20),
+
+                // Title
+                Text(
+                  "Item Locked",
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: accentColor,
+                  ),
+                ),
+
+                SizedBox(height: 10),
+
+                // Description
+                Text(
+                  "This premium item is locked. Visit the shop to unlock it!",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey[700],
+                  ),
+                ),
+
+                SizedBox(height: 25),
+
+                // Buttons
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Cancel button
+                    TextButton(
+                      onPressed: () => Get.back(),
+                      style: TextButton.styleFrom(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      ),
+                      child: Text(
+                        "Later",
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+
+                    SizedBox(width: 10),
+
+                    // Go to shop button
+                    ElevatedButton(
+                      onPressed: () {
+                        Get.back();
+
+                        // Get the tab controller to change the tab
+                        final tabController = Get.find<AppTabController>();
+
+                        // Switch to the shop tab (index 2)
+                        tabController.changeTab(2);
+
+                        // Tell the shop controller to highlight this item
+                        shopController.highlightItemId.value = shopItemId;
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: accentColor,
+                        foregroundColor: Colors.white,
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                      child: Text(
+                        "Go to Shop",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // When an item is purchased in the shop, we need to update the locked status
+  void refreshLockedStatus() {
+    _initializeLockedItems();
+    update(['category_selector', 'item_grid']);
+  }
+
   // Identifikasi item yang dipilih untuk setiap kategori berdasarkan avatar yang dimuat
   void _identifySelectedItems() {
     for (int categoryIndex = 0;
@@ -206,6 +502,12 @@ class PageMakerCharacterController extends GetxController
 
     listImageLayer.value = List.generate(listItemMaker.length, (index) {
       int tnd = Random().nextInt(listItemMaker[index].listItem!.length);
+
+      // Make sure we're not selecting a locked item for random avatars
+      while (isItemLocked(index, tnd)) {
+        tnd = Random().nextInt(listItemMaker[index].listItem!.length);
+      }
+
       randNumber.add(tnd);
 
       // Simpan item yang dipilih secara acak
@@ -228,23 +530,6 @@ class PageMakerCharacterController extends GetxController
     itemSelected.value = selectedItemsPerCategory[index] ?? 0;
   }
 
-  void selectItem(int index) {
-    final listItemMaker = assetRepo.listItemMaker;
-
-    // Simpan item yang dipilih untuk kategori saat ini
-    selectedItemsPerCategory[partSelected.value] = index;
-
-    // Update nilai itemSelected untuk highlight di UI
-    itemSelected.value = index;
-
-    // Update layer dan string avatar
-    listAvatarLayerString[partSelected.value] =
-        listItemMaker[partSelected.value].listItem![index].toString();
-
-    listImageLayer[partSelected.value] =
-        Image.asset(listItemMaker[partSelected.value].listItem![index]);
-  }
-
   // Mendapatkan item yang dipilih untuk kategori tertentu
   int getSelectedItemForCategory(int categoryIndex) {
     return selectedItemsPerCategory[categoryIndex] ?? 0;
@@ -256,6 +541,11 @@ class PageMakerCharacterController extends GetxController
     for (int index = 0; index < listImageLayer.length; index++) {
       if (listItemMaker[index].listItem != null) {
         int tnd = Random().nextInt(listItemMaker[index].listItem!.length);
+
+        // Make sure we're not selecting a locked item for random avatars
+        while (isItemLocked(index, tnd)) {
+          tnd = Random().nextInt(listItemMaker[index].listItem!.length);
+        }
 
         // Simpan item yang dipilih secara acak
         selectedItemsPerCategory[index] = tnd;
@@ -312,6 +602,14 @@ class PageMakerCharacterController extends GetxController
         print("Saving new avatar");
         // Save new avatar
         await saveAvatarController.saveAvatar(listAvatarLayerString.toList());
+
+        // Track creation for achievements
+        try {
+          final achievementController = Get.find<AchievementController>();
+          await achievementController.trackAvatarCreated();
+        } catch (e) {
+          print("Achievement controller not found: $e");
+        }
       }
 
       // Save image to gallery
