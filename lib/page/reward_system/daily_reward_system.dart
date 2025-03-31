@@ -273,6 +273,8 @@ class DailyReward {
 class DailyRewardsPage extends StatelessWidget {
   final rewardsController = Get.find<RewardsController>();
 
+  static var routeName;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
