@@ -221,6 +221,37 @@ class ShopPage extends StatelessWidget {
         itemCount: items.length,
         itemBuilder: (context, index) {
           final item = items[index];
+
+          // Check if this item is highlighted (from avatar maker)
+          final isHighlighted = shopController.highlightItemId.value == item.id;
+
+          // If highlighted, add special effects
+          if (isHighlighted) {
+            // Reset highlight after 3 seconds to prevent it staying highlighted forever
+            Future.delayed(Duration(seconds: 3), () {
+              shopController.highlightItemId.value = "";
+            });
+
+            return AnimatedScale(
+              scale: 1.05,
+              duration: Duration(milliseconds: 300),
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(15),
+                  boxShadow: [
+                    BoxShadow(
+                      color: shopController.rewardsController.accentColor
+                          .withOpacity(0.7),
+                      blurRadius: 15,
+                      spreadRadius: 5,
+                    ),
+                  ],
+                ),
+                child: _buildShopItemCard(item),
+              ),
+            );
+          }
+
           return _buildShopItemCard(item);
         },
       );
